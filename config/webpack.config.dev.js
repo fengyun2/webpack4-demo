@@ -23,18 +23,6 @@ module.exports = {
     filename: '[name].js',
     publicPath: '/'
   },
-  // optimization: {
-  //   splitChunks: {
-  //     cacheGroups: {
-  //       vendors: {
-  //         test: /[\\/]node_modules[\\/]/,
-  //         name: 'vendors',
-  //         enfore: true,
-  //         chunks: 'all'
-  //       }
-  //     }
-  //   }
-  // },
   optimization: {
     splitChunks: {
       cacheGroups: {
