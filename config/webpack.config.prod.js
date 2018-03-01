@@ -1,10 +1,15 @@
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const extractTextWebpackPlugin = require('extract-text-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
 const package = require('../package.json');
+
+function resolve(dir) {
+  return path.join(__dirname, '..', dir);
+}
 
 const PATHS = {
   src: path.join(__dirname, '../src'),
@@ -12,8 +17,18 @@ const PATHS = {
   // faviconPath: path.join(__dirname, '../src/favicon.ico')
 };
 
+// the path(s) that should be cleaned
+const pathsToClean = ['dist/**/*.*'];
+
+// the clean options to use
+const cleanOptions = {
+  root: path.resolve(__dirname, '../'),
+  // verbose: true,
+  // dry: false,
+};
+
 module.exports = {
-  context: __dirname,
+  context: path.resolve(__dirname, '../'),
   mode: 'production',
   entry: {
     app: [PATHS.src],
@@ -65,7 +80,7 @@ module.exports = {
       // },
       {
         test: /\.css$/,
-        use: extractTextWebpackPlugin.extract({
+        use: ExtractTextPlugin.extract({
           fallback: {
             loader: 'style-loader',
             /* options: {
@@ -125,16 +140,16 @@ module.exports = {
     ],
   },
   plugins: [
-    // new ExtractTextPlugin("[name].[contenthash:8].css"),
-    new extractTextWebpackPlugin({
-      filename: '[name].min.css',
+    new CleanWebpackPlugin(pathsToClean, cleanOptions),
+    new ExtractTextPlugin({
+      filename: '[name].[contenthash:8].css',
       allChunks: false, // 制定提取css的范围,提取初始化（非异步加载）,此时在commonChunk插件下，css也会被当成一个chunk,所有要用contenthash
     }),
     new HtmlWebpackPlugin({
       // Required
       inject: false,
       // template: require('html-webpack-template'),
-      template: '../node_modules/html-webpack-template/index.ejs',
+      template: 'node_modules/html-webpack-template/index.ejs',
 
       // Optional
       appMountId: 'app',
