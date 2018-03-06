@@ -1,5 +1,5 @@
 import foo from './demo/foo';
-import bar from './demo/bar';
+// import bar from './demo/bar';
 import './global.scss';
 import './test.css';
 

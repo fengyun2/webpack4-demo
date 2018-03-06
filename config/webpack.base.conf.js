@@ -2,6 +2,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack');
 const path = require('path');
 
 const packageJson = require('../package.json');
@@ -27,7 +28,11 @@ function cssLoaders(options) {
     loader: 'css-loader',
     options: {
       sourceMap: options.sourceMap,
-    },
+      modules: !!options.modules,
+      localIdentName: !!options.modules
+        ? "[local]_[hash:base64:5]"
+        : null
+    }
   };
 
   const postcssLoader = {
@@ -35,34 +40,28 @@ function cssLoaders(options) {
     options: {
       sourceMap: options.sourceMap,
       ident: 'postcss',
-      plugins: [
-        // require('autoprefixer')(), // cssnext 包含autoprefixer
-        // require('cssnano')(),
-        require('postcss-cssnext')(),
-      ],
-    },
+      plugins: [// require('autoprefixer')(), // cssnext 包含autoprefixer require('cssnano')(),
+        require('postcss-cssnext')()]
+    }
   };
 
   // generate loader string to be used with extract text plugin
   function generateLoaders(loader, loaderOptions) {
-    const loaders = options.usePostCSS ? [cssLoader, postcssLoader] : [cssLoader];
+    const loaders = options.usePostCSS
+      ? [cssLoader, postcssLoader]
+      : [cssLoader];
 
     if (loader) {
       loaders.push({
         loader: `${loader}-loader`,
-        options: Object.assign({}, loaderOptions, {
-          sourceMap: options.sourceMap,
-        }),
+        options: Object.assign({}, loaderOptions, {sourceMap: options.sourceMap})
       });
     }
 
-    // Extract CSS when that option is specified
-    // (which is the case during production build)
+    // Extract CSS when that option is specified (which is the case during
+    // production build)
     if (options.extract) {
-      return ExtractTextPlugin.extract({
-        use: loaders,
-        fallback: 'style-loader',
-      });
+      return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
     }
     return ['style-loader'].concat(loaders);
   }
@@ -72,10 +71,10 @@ function cssLoaders(options) {
     css: generateLoaders(),
     postcss: generateLoaders(),
     less: generateLoaders('less'),
-    sass: generateLoaders('sass', { indentedSyntax: true }),
+    sass: generateLoaders('sass', {indentedSyntax: true}),
     scss: generateLoaders('sass'),
     stylus: generateLoaders('stylus'),
-    styl: generateLoaders('stylus'),
+    styl: generateLoaders('stylus')
   };
 }
 
@@ -87,7 +86,7 @@ function resolve(dir) {
 
 const PATHS = {
   src: path.join(__dirname, '../src'),
-  dist: path.join(__dirname, '../dist'),
+  dist: path.join(__dirname, '../dist')
 };
 
 // the path(s) that should be cleaned
@@ -96,21 +95,22 @@ const pathsToClean = ['dist/**/*.*'];
 // the clean options to use
 const cleanOptions = {
   root: path.resolve(__dirname, '../'),
-  // verbose: true,
-  // dry: false,
+  // verbose: true, dry: false,
 };
 
 module.exports = {
-  context: path.resolve(__dirname, '../'),
-  mode: isProduction ? 'production' : 'development',
+  context: path.resolve(__dirname, '../'), // entry 和 module.rules.loader 选项相对于此目录开始解析
+  mode: isProduction
+    ? 'production'
+    : 'development',
   entry: {
     app: [PATHS.src],
-    vendors: Object.keys(packageJson.dependencies),
+    vendors: Object.keys(packageJson.dependencies)
   },
   output: {
-    path: PATHS.dist,
+    path: PATHS.dist, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
     filename: '[name].[chunkhash].js',
-    publicPath: '/',
+    publicPath: '/' // 文件解析路径，index.html中引用的路径会被设置为相对于此路径
   },
   optimization: {
     splitChunks: {
@@ -134,34 +134,57 @@ module.exports = {
           maxAsyncRequests: 1, // 最大异步请求数， 默认1
           maxInitialRequests: 1, // 最大初始化请求数，默认1
           reuseExistingChunk: true, // 可设置是否重用该chunk（查看源码没有发现默认值）
-        },
-      },
-    },
+        }
+      }
+    }
   },
   resolve: {
-    extensions: ['.js', '.json', 'jsm'],
+    extensions: ['.js', '.json', 'jsm']
   },
   module: {
     rules: [
       {
+        // 编译前通过eslint检查代码 (注释掉即可取消eslint检测)
+        test: /\.js?$/,
+        enforce: "pre",
+        loader: "eslint-loader",
+        include: PATHS.src
+      }, {
+        // .js .jsx用babel解析
+        test: /\.js?$/,
+        include: PATHS.src,
+        loader: "babel-loader"
+      }, {
         test: /\.css$/,
-        use: cssLoaders({
-          sourceMap: sourceMapEnabled,
-          extract: isProduction,
-        }).css,
-      },
-      {
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: isProduction}).css
+      }, {
         test: /\.scss$/,
-        use: cssLoaders({
-          sourceMap: sourceMapEnabled,
-          extract: isProduction,
-          usePostCSS: true,
-        }).scss,
-      },
-    ],
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: isProduction}).scss
+      }, {
+        test: /\.less$/,
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: isProduction}).less,
+        include: PATHS.src
+      }, {
+        test: /\.less$/, // (用于解析antd的LESS文件)
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true}).less,
+        include: resolve("node_modules")
+      }, {
+        // 文件解析
+        test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
+        include: PATHS.src,
+        loader: "file-loader?name=assets/[name].[ext]"
+      }, {
+        // 图片解析
+        test: /\.(png|jpg|gif)$/,
+        include: PATHS.src,
+        loader: "url-loader?limit=8192&name=assets/[name].[ext]"
+      }
+    ]
   },
   plugins: [
     new CleanWebpackPlugin(pathsToClean, cleanOptions),
+    // new webpack.NoEmitOnErrorsPlugin(), // 在编译出现错误时，自动跳过输出阶段。这样可以确保编译出的资源中不会包含错误。
+
     new HtmlWebpackPlugin({
       // Required
       inject: false,
@@ -175,9 +198,11 @@ module.exports = {
       meta: [
         {
           name: 'description',
-          content: 'A better default template for html-webpack-plugin.',
-        },
-        { name: 'robots', content: 'noindex,nofollow' },
+          content: 'A better default template for html-webpack-plugin.'
+        }, {
+          name: 'robots',
+          content: 'noindex,nofollow'
+        }
       ],
       mobile: true,
       lang: 'en-US',
@@ -187,14 +212,14 @@ module.exports = {
         conservativeCollapse: true,
         preserveLineBreaks: true,
         useShortDoctype: true,
-        html5: true,
-      },
+        html5: true
+      }
     }),
     new CopyWebpackPlugin([
       {
         from: path.join(PATHS.src, 'favicon.ico'),
-        to: path.join(PATHS.dist, 'favicon.ico'),
-      },
-    ]),
-  ],
+        to: path.join(PATHS.dist, 'favicon.ico')
+      }
+    ])
+  ]
 };
