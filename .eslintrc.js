@@ -22,6 +22,7 @@ module.exports = {
     "semi": 0,
     "no-debugger": 0,
     "no-console": 0,
-    "comma-dangle": 0
+    "comma-dangle": 0,
+    "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }]
   }
 };

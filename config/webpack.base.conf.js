@@ -27,13 +27,16 @@ function cssLoaders(options) {
   const cssLoader = {
     loader: 'css-loader',
     options: {
-      sourceMap: options.sourceMap,
-      modules: !!options.modules,
-      localIdentName: !!options.modules
-        ? "[local]_[hash:base64:5]"
-        : null
+      sourceMap: options.sourceMap
     }
   };
+  if (options.modules) {
+    cssLoader.options = {...cssLoader.options, ...{
+      modules: true,
+      importLoaders: 1,
+      localIdentName:  "[path]___[name]__[local]___[hash:base64:5]"
+    }}
+  }
 
   const postcssLoader = {
     loader: 'postcss-loader',
@@ -139,7 +142,7 @@ module.exports = {
     }
   },
   resolve: {
-    extensions: ['.js', '.json', 'jsm']
+    extensions: ['.js', '.json', 'jsm','.css', '.less', '.scss', '.sass', '.jsx', '.vue']
   },
   module: {
     rules: [
@@ -156,17 +159,24 @@ module.exports = {
         loader: "babel-loader"
       }, {
         test: /\.css$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: isProduction}).css
-      }, {
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).css,
+        include: PATHS.src
+      },
+      {
+        test: /\.css$/,
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false}).css,
+        include: resolve("node_modules")
+      },
+      {
         test: /\.scss$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: isProduction}).scss
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).scss
       }, {
         test: /\.less$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: isProduction}).less,
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).less,
         include: PATHS.src
       }, {
         test: /\.less$/, // (用于解析antd的LESS文件)
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true}).less,
+        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false}).less,
         include: resolve("node_modules")
       }, {
         // 文件解析
