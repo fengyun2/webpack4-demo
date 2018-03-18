@@ -1,22 +1,32 @@
 import React from 'react'
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
 
-import asyncComponent from '../utils/AsyncComponent'
-// import Loadable from 'react-loadable';
-// import Loading from '../components/Loading';
-
-// const LazyLoad = (component) => Loadable({
-//   loader:() => import(component),
-//   loading: Loading
-// })
+// import asyncComponent from '../utils/AsyncComponent'
+import Loadable from 'react-loadable';
+import Loading from '../components/Loading';
 
 // import Home from '../containers/Home'
 // import About from '../containers/About'
 // import Topics from '../containers/Topics'
 
-const Home = asyncComponent(() => import(/* webpackChunkName: "home" */ '../containers/Home'))
-const About = asyncComponent(() => import(/* webpackChunkName: "about" */ '../containers/About'))
-const Topics = asyncComponent(() => import(/* webpackChunkName: "topics" */ '../containers/Topics'))
+// 懒加载的第一种方式：
+// const Home = asyncComponent(() => import(/* webpackChunkName: "home" */ '../containers/Home'))
+// const About = asyncComponent(() => import(/* webpackChunkName: "about" */ '../containers/About'))
+// const Topics = asyncComponent(() => import(/* webpackChunkName: "topics" */ '../containers/Topics'))
+
+// 懒加载的第二中方式：Loadable
+const Home = Loadable({
+  loader: () => import('../containers/Home'),
+  loading: Loading
+})
+const About = Loadable({
+  loader: () => import('../containers/About'),
+  loading: Loading
+})
+const Topics = Loadable({
+  loader: () => import('../containers/Topics'),
+  loading: Loading
+})
 
 const RouterConfig = () => (
   <Router>

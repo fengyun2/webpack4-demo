@@ -108,7 +108,7 @@ module.exports = {
     : 'development',
   entry: {
     app: [PATHS.src],
-    vendors: Object.keys(packageJson.dependencies).filter(item => item.indexOf('@types') === -1)
+    vendors: Object.keys(packageJson.dependencies).filter(item => item.indexOf('@types') === -1 && ['react', 'react-dom', 'react-router-dom'].includes(item))
   },
   output: {
     path: PATHS.dist, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
