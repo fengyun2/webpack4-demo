@@ -8,6 +8,7 @@
     "dev": "webpack --mode development",
     "build": "webpack --mode production",
     "stats": "webpack --profile --json > stats.json",
+    "build:report": "cross-env NODE_ENV=production npm_config_report=true npm run build",
     "dev:server": "webpack-dev-server",
     "commit": "git-cz",
     "prettier": "prettier --write \"{src,mock}/**/*.{js,css,scss,less}\"",
@@ -39,6 +40,7 @@
     "commitizen": "^2.9.6",
     "commitlint-config-cz": "^0.8.0",
     "copy-webpack-plugin": "^4.4.2",
+    "cross-env": "^5.1.4",
     "css-loader": "^0.28.10",
     "cssnano": "^3.10.0",
     "cz-conventional-changelog": "^2.1.0",
@@ -71,6 +73,7 @@
     "style-loader": "^0.20.2",
     "url-loader": "^1.0.1",
     "webpack": "^4.0.0",
+    "webpack-bundle-analyzer": "^2.11.1",
     "webpack-cli": "^2.0.9",
     "webpack-dev-server": "^3.1.0",
     "webpack-merge": "^4.1.2"
