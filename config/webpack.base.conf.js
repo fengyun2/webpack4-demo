@@ -2,6 +2,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -197,7 +198,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(pathsToClean, cleanOptions),
     // new webpack.NoEmitOnErrorsPlugin(), // 在编译出现错误时，自动跳过输出阶段。这样可以确保编译出的资源中不会包含错误。
-
+    new LodashModuleReplacementPlugin,
     new HtmlWebpackPlugin({
       // Required
       inject: false,

@@ -27,7 +27,8 @@
         "libraryDirectory": "es",
 	      "style": "css"
       }
-    ]
+    ],
+    "lodash"
   ],
   "ignore": [
     "xxx.js",
