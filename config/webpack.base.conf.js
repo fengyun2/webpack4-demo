@@ -108,7 +108,7 @@ module.exports = {
     : 'development',
   entry: {
     app: [PATHS.src],
-    vendors: Object.keys(packageJson.dependencies)
+    vendors: Object.keys(packageJson.dependencies).filter(item => item.indexOf('@types') === -1)
   },
   output: {
     path: PATHS.dist, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
@@ -142,7 +142,10 @@ module.exports = {
     }
   },
   resolve: {
-    extensions: ['.js', '.json', 'jsm','.css', '.less', '.scss', '.sass', '.jsx', '.vue']
+    extensions: ['.js', '.json', 'jsm','.css', '.less', '.scss', '.sass', '.jsx', '.vue'],
+    alias: {
+      '@': resolve('src')
+    }
   },
   module: {
     rules: [
