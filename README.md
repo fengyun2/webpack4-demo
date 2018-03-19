@@ -19,6 +19,37 @@ vendors.js：692KB
 app.js：829KB
 vendors.js：692KB
 
+## moment优化
+
+### 方案一：去掉不必要的locale(优化后还是很大)
+
+**优化前**：
+
+app.js: 1.1MB
+vendors.js：692KB
+
+**优化后**：
+
+app.js: 918KB
+vendors.js：692KB
+
+### 方案二：替换为 [date-fns](https://date-fns.org/)
+
+**优化前**：
+
+app.js: 829KB
+vendors.js：692KB
+
+**优化后**：
+
+app.js: 918KB
+vendors.js：692KB
+
+**引入 babel-plugin-date-fns 插件后**：
+
+app.js: 850KB
+vendors.js：692KB
+
 ## 参考文档
 
 1. [webpack-demo](https://github.com/carloluis/webpack-demo)
