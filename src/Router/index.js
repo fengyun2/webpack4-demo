@@ -1,10 +1,13 @@
-import React from 'react'
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import React from 'react';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { LocaleProvider, Spin } from 'antd';
+import zhCN from 'antd/lib/locale-provider/zh_CN';
 
 // import asyncComponent from '../utils/AsyncComponent'
 import Loadable from 'react-loadable';
 import Loading from '../components/Loading';
 
+import BasicLayout from '@/layouts/BasicLayout';
 // import Home from '../containers/Home'
 // import About from '../containers/About'
 // import Topics from '../containers/Topics'
@@ -18,34 +21,43 @@ import Loading from '../components/Loading';
 const Home = Loadable({
   loader: () => import('../containers/Home'),
   loading: Loading
-})
+});
 const About = Loadable({
   loader: () => import('../containers/About'),
   loading: Loading
-})
+});
 const Topics = Loadable({
   loader: () => import('../containers/Topics'),
   loading: Loading
-})
+});
 
-const RouterConfig = () => (
-  <Router>
-    <div>
-      <ul>
-        <li><Link to="/">Home</Link></li>
-        <li>
-          <Link to="/about">About</Link>
-        </li>
-        <li><Link to="/topics">Topics</Link></li>
-      </ul>
+const RouterConfig = () => {
+  return (
+    <LocaleProvider locale={zhCN}>
+      <Router>
+        <div>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/about">About</Link>
+            </li>
+            <li>
+              <Link to="/topics">Topics</Link>
+            </li>
+          </ul>
 
-      <hr />
+          <hr />
+          <Switch>
+            <Route exact path="/" component={Home} />
+            <Route path="/about" component={About} />
+            <Route path="/topics" component={Topics} />
+          </Switch>
+        </div>
+      </Router>
+    </LocaleProvider>
+  );
+};
 
-      <Route exact path="/" component={Home} />
-      <Route path="/about" component={About} />
-      <Route path="/topics" component={Topics} />
-    </div>
-  </Router>
-)
-
-export default RouterConfig
+export default RouterConfig;

@@ -57,3 +57,4 @@ vendors.js：692KB
 3. [webpack-ci](https://github.com/Faithree/webpack-ci)
 4. [优雅的提交你的 Git Commit Message](https://zhuanlan.zhihu.com/p/34223150)
 
+5. [ant-design-demo](https://github.com/yezihaohao/react-admin)
