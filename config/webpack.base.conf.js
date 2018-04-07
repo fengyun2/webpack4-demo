@@ -2,10 +2,13 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
+const utils = require('./utils')
 const packageJson = require('../package.json');
 
 const TARGET = process.env.npm_lifecycle_event;
@@ -22,7 +25,7 @@ const sourceMapEnabled = !isProduction;
  * 统一处理css-loader
  * @param {*} options
  */
-function cssLoaders(options) {
+/*function cssLoaders(options) {
   options = options || {};
 
   const cssLoader = {
@@ -69,6 +72,7 @@ function cssLoaders(options) {
     // production build)
     if (options.extract) {
       return ExtractTextPlugin.extract({ use: loaders, fallback: 'style-loader' });
+      // return [MiniCssExtractPlugin.loader,'style-loader'].concat(loaders)
     }
     return ['style-loader'].concat(loaders);
   }
@@ -83,7 +87,7 @@ function cssLoaders(options) {
     stylus: generateLoaders('stylus'),
     styl: generateLoaders('stylus')
   };
-}
+}*/
 
 /* eslint-disable */
 function resolve(dir) {
@@ -168,39 +172,64 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true }).css,
+        use: utils.cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true }).css,
         include: PATHS.src
       },
       {
         test: /\.css$/,
-        use: cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false }).css,
+        use: utils.cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false }).css,
         include: resolve('node_modules')
       },
       {
         test: /\.scss$/,
-        use: cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true }).scss
+        use: utils.cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true }).scss
       },
       {
         test: /\.less$/,
-        use: cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true }).less,
+        use: utils.cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true }).less,
         include: PATHS.src
       },
       {
         test: /\.less$/, // (用于解析antd的LESS文件)
-        use: cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false }).less,
+        use: utils.cssLoaders({ sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false }).less,
         include: resolve('node_modules')
       },
+      // {
+      //   // 文件解析
+      //   test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
+      //   include: PATHS.src,
+      //   loader: 'file-loader?name=assets/[name].[ext]'
+      // },
+      // {
+      //   // 图片解析
+      //   test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+      //   include: PATHS.src,
+      //   loader: 'url-loader?limit=8192&name=img/[name].[hash:7].[ext]'
+      // }
       {
-        // 文件解析
-        test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
-        include: PATHS.src,
-        loader: 'file-loader?name=assets/[name].[ext]'
+        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+        loader: 'url-loader',
+        // exclude: [resolve('src/icons')],
+        options: {
+          limit: 10000,
+          name: utils.assetsPath('img/[name].[hash:7].[ext]')
+        }
       },
       {
-        // 图片解析
-        test: /\.(png|jpg|gif)$/,
-        include: PATHS.src,
-        loader: 'url-loader?limit=8192&name=assets/[name].[ext]'
+        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          name: utils.assetsPath('media/[name].[hash:7].[ext]')
+        }
+      },
+      {
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          name: utils.assetsPath('fonts/[name].[hash:7].[ext]')
+        }
       }
     ]
   },
