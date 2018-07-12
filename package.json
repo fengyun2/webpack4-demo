@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npm run dev:server",
+    "dll": "webpack --config config/webpack.dll.config.js --mode production",
     "dev": "webpack --mode development",
     "build": "webpack --display-used-exports --optimize-minimize --mode production",
     "stats": "webpack --profile --json > stats.json",
@@ -45,6 +46,7 @@
     "eslint": "^4.18.1",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-loader": "^2.0.0",
+    "eslint-plugin-html": "^4.0.5",
     "eslint-plugin-import": "^2.9.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-prettier": "^2.6.0",

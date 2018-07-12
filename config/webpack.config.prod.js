@@ -1,6 +1,6 @@
 const merge = require('webpack-merge');
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
 const baseWebpackConfig = require('./webpack.base.conf');
@@ -23,11 +23,12 @@ const webpackConfig = merge(baseWebpackConfig, {
 
     ] */
   },
-  plugins: [/*     new ExtractTextPlugin({
-      filename: '[name].[contenthash:8].css', allChunks: false, // 制定提取css的范围,提取初始化（非异步加载）,此时在commonChunk插件下，css也会被当成一个chunk,所有要用contenthash
-    }) */
+  plugins: [
+    /*   new ExtractTextPlugin({
+    filename: '[name].[contenthash:8].css', allChunks: false, // 制定提取css的范围,提取初始化（非异步加载）,此时在commonChunk插件下，css也会被当成一个chunk,所有要用contenthash
+  }), */
 
-    new MiniCssExtractPlugin({filename: "css/[name].[chunkhash:8].css", chunkFilename: 'css/[name].[contenthash:8].css'})]
+    new MiniCssExtractPlugin({ filename: 'css/[name].[chunkhash:8].css', chunkFilename: 'css/[name].[contenthash:8].css' })]
 });
 
 module.exports = webpackConfig;

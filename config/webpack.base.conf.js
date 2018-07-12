@@ -2,9 +2,11 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const path = require('path');
+
+const project = require('./project.config')
 
 const packageJson = require('../package.json');
 
@@ -37,7 +39,7 @@ function cssLoaders(options) {
       ...{
         modules: true,
         importLoaders: 1,
-        localIdentName: "[path]___[name]__[local]___[hash:base64:5]"
+        localIdentName: '[path]___[name]__[local]___[hash:base64:5]'
       }
     }
   }
@@ -49,6 +51,7 @@ function cssLoaders(options) {
       ident: 'postcss',
       plugins: [/*         // cssnext 包含autoprefixer require('cssnano')(),
         require('postcss-cssnext')(), */
+        // eslint-disable-next-line
         require('postcss-preset-env')()]
     }
   };
@@ -62,14 +65,13 @@ function cssLoaders(options) {
     if (loader) {
       loaders.push({
         loader: `${loader}-loader`,
-        options: Object.assign({}, loaderOptions, {sourceMap: options.sourceMap})
+        options: Object.assign({}, loaderOptions, { sourceMap: options.sourceMap })
       });
     }
 
     // Extract CSS when that option is specified (which is the case during
     // production build)
     if (options.extract) {
-
       loaders.unshift(MiniCssExtractPlugin.loader)
 
       return loaders
@@ -83,7 +85,7 @@ function cssLoaders(options) {
     css: generateLoaders(),
     postcss: generateLoaders(),
     less: generateLoaders('less'),
-    sass: generateLoaders('sass', {indentedSyntax: true}),
+    sass: generateLoaders('sass', { indentedSyntax: true }),
     scss: generateLoaders('sass'),
     stylus: generateLoaders('stylus'),
     styl: generateLoaders('stylus')
@@ -110,7 +112,7 @@ const cleanOptions = {
   // verbose: true, dry: false,
 };
 
-module.exports = {
+const webpackConfig = {
   context: path.resolve(__dirname, '../'), // entry 和 module.rules.loader 选项相对于此目录开始解析
   mode: isProduction
     ? 'production'
@@ -131,7 +133,7 @@ module.exports = {
       minChunks: 1, // 最小 chunk ，默认1
       maxAsyncRequests: 1, // 最大异步请求数， 默认1
       maxInitialRequests: 1, // 最大初始化请求数，默认1
-      name: () => {}, // 名称，此选项课接收 function
+      name: () => { }, // 名称，此选项课接收 function
       cacheGroups: {
         // 这里开始设置缓存的 chunks
         priority: '0', // 缓存组优先级 false | object |
@@ -173,11 +175,11 @@ module.exports = {
     ],
     alias: {
       '@': PATHS.src,
-      "actions": path.resolve(__dirname, "../src/actions"),
-      "components": path.resolve(__dirname, "../src/components"),
-      "containers": path.resolve(__dirname, "../src/containers"),
-      "reducers": path.resolve(__dirname, "../src/reducers"),
-      "utils": path.resolve(__dirname, "../src/utils")
+      actions: path.resolve(__dirname, '../src/actions'),
+      components: path.resolve(__dirname, '../src/components'),
+      containers: path.resolve(__dirname, '../src/containers'),
+      reducers: path.resolve(__dirname, '../src/reducers'),
+      utils: path.resolve(__dirname, '../src/utils')
     }
   },
   module: {
@@ -185,50 +187,64 @@ module.exports = {
       {
         // 编译前通过eslint检查代码 (注释掉即可取消eslint检测)
         test: /\.js?$/,
-        enforce: "pre",
-        loader: "eslint-loader",
+        enforce: 'pre',
+        loader: 'eslint-loader',
         include: PATHS.src
       }, {
         // .js .jsx用babel解析
         test: /\.js?$/,
         include: PATHS.src,
-        loader: "babel-loader"
+        loader: 'babel-loader'
       }, {
         test: /\.css$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).css,
+        use: cssLoaders({
+          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
+        }).css,
         include: PATHS.src
       }, {
         test: /\.css$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false}).css,
-        include: resolve("node_modules")
+        use: cssLoaders({
+          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
+        }).css,
+        include: resolve('node_modules')
       }, {
         test: /\.scss$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).scss
+        use: cssLoaders({
+          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
+        }).scss
       }, {
         test: /\.less$/,
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).less,
+        use: cssLoaders({
+          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
+        }).less,
         include: PATHS.src
       }, {
         test: /\.less$/, // (用于解析antd的LESS文件)
-        use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false}).less,
-        include: resolve("node_modules")
+        use: cssLoaders({
+          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
+        }).less,
+        include: resolve('node_modules')
       }, {
         // 文件解析
         test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
         include: PATHS.src,
-        loader: "file-loader?name=assets/[name].[ext]"
+        loader: 'file-loader?name=assets/[name].[ext]'
       }, {
         // 图片解析
         test: /\.(png|jpg|gif)$/,
         include: PATHS.src,
-        loader: "url-loader?limit=8192&name=assets/[name].[ext]"
+        loader: 'url-loader?limit=8192&name=assets/[name].[ext]'
       }
     ]
   },
   plugins: [
     new CleanWebpackPlugin(pathsToClean, cleanOptions),
     // new webpack.NoEmitOnErrorsPlugin(), // 在编译出现错误时，自动跳过输出阶段。这样可以确保编译出的资源中不会包含错误。
-
+    new webpack.DllReferencePlugin({
+      context: project.basePath,
+      // eslint-disable-next-line
+  manifest: require(path.resolve(project.basePath, 'dll', 'vendors.manifest.json'))
+    }),
     new HtmlWebpackPlugin({
       // Required
       inject: false,
@@ -257,13 +273,21 @@ module.exports = {
         preserveLineBreaks: true,
         useShortDoctype: true,
         html5: true
-      }
+      },
+      scripts: ['./dll/vendors.dll.js'], // 与dll配置文件中output.fileName对齐
     }),
+
     new CopyWebpackPlugin([
       {
         from: path.join(PATHS.src, 'favicon.ico'),
         to: path.join(PATHS.dist, 'favicon.ico')
+      },
+      {
+        from: path.join(project.basePath, 'dll'),
+        to: path.join(project.basePath, 'dist', 'dll')
       }
     ])
   ]
 };
+
+module.exports = webpackConfig

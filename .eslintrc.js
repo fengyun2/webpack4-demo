@@ -23,6 +23,8 @@ module.exports = {
     "no-debugger": 0,
     "no-console": 0,
     "comma-dangle": 0,
+    "no-param-reassign": 0,
+    "max-len": 0,
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }]
   }
 };

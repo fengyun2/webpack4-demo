@@ -16,13 +16,14 @@ const webpackConfig = merge(baseWebpackConfig, {
     publicPath: '/'
   },
 
-  devtool: "inline-source-map", // 报错的时候在控制台输出哪一行报错
+  devtool: 'inline-source-map', // 报错的时候在控制台输出哪一行报错
   watchOptions: {
     ignored: /node_modules/
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NamedModulesPlugin()
+    new webpack.NamedModulesPlugin(),
+
   ],
   devServer: {
     contentBase: PATHS.dist,
