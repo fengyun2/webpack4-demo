@@ -134,7 +134,7 @@ const webpackConfig = {
       chunks: 'all', // 必须三选一： "initial" | "all"(默认就是all) | "async"
       minSize: 30000, // 最小尺寸，默认0
       minChunks: 1, // 最小 chunk ，默认1
-      maxAsyncRequests: 1, // 最大异步请求数， 默认1
+      maxAsyncRequests: 1, // 最大异步请求数， 默认1(目前改为其他值会导致页面加载不出来)
       maxInitialRequests: 1, // 最大初始化请求数，默认1
       name: () => { }, // 名称，此选项可接收 function
       cacheGroups: {
