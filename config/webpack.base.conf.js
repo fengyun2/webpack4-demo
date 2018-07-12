@@ -1,4 +1,3 @@
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -6,10 +5,17 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HappyPack = require('happypack');
 const webpack = require('webpack');
 const path = require('path');
+const os = require('os');
+
+const happyThreadPool = HappyPack.ThreadPool({
+  size: os
+    .cpus()
+    .length
+});
 
 const project = require('./project.config')
 
-const packageJson = require('../package.json');
+// const packageJson = require('../package.json');
 
 const TARGET = process.env.npm_lifecycle_event;
 let isProduction = false;
@@ -104,15 +110,6 @@ const PATHS = {
   dist: path.join(__dirname, '../dist')
 };
 
-// the path(s) that should be cleaned
-const pathsToClean = ['dist/**/*.*'];
-
-// the clean options to use
-const cleanOptions = {
-  root: path.resolve(__dirname, '../'),
-  // verbose: true, dry: false,
-};
-
 const webpackConfig = {
   context: path.resolve(__dirname, '../'), // entry 和 module.rules.loader 选项相对于此目录开始解析
   mode: isProduction
@@ -120,7 +117,8 @@ const webpackConfig = {
     : 'development',
   entry: {
     app: [PATHS.src],
-    vendors: Object.keys(packageJson.dependencies)
+    vendors: project.vendors
+    // vendors: Object.keys(packageJson.dependencies) // 已存在dll文件打包了
   },
   output: {
     path: PATHS.dist, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
@@ -128,13 +126,17 @@ const webpackConfig = {
     publicPath: '/' // 文件解析路径，index.html中引用的路径会被设置为相对于此路径
   },
   optimization: {
+    runtimeChunk: {
+      name: 'manifest'
+    },
+    // minimizer: true, // [new UglifyJsPlugin({...})]
     splitChunks: {
       chunks: 'all', // 必须三选一： "initial" | "all"(默认就是all) | "async"
       minSize: 30000, // 最小尺寸，默认0
       minChunks: 1, // 最小 chunk ，默认1
       maxAsyncRequests: 1, // 最大异步请求数， 默认1
       maxInitialRequests: 1, // 最大初始化请求数，默认1
-      name: () => { }, // 名称，此选项课接收 function
+      name: () => { }, // 名称，此选项可接收 function
       cacheGroups: {
         // 这里开始设置缓存的 chunks
         priority: '0', // 缓存组优先级 false | object |
@@ -144,9 +146,10 @@ const webpackConfig = {
           maxInitialRequests: 5, // The default limit is too small to showcase the effect
           minSize: 0 // This is example is too small to create commons chunks
         }, */
+        // 已存在dll文件打包了
         vendors: {
           // key 为entry中定义的 入口名称
-          test: /node_modules/, // 正则规则验证，如果符合就提取 chunk
+          test: /node_modules\/(.*)\.js/, // 正则规则验证，如果符合就提取 chunk
           name: 'vendors', // 要缓存的 分隔出来的 chunk 名称
           priority: -10,
           minSize: 0,
@@ -176,6 +179,7 @@ const webpackConfig = {
     ],
     alias: {
       '@': PATHS.src,
+      vue: 'vue/dist/vue.esm.js',
       actions: path.resolve(__dirname, '../src/actions'),
       components: path.resolve(__dirname, '../src/components'),
       containers: path.resolve(__dirname, '../src/containers'),
@@ -202,6 +206,7 @@ const webpackConfig = {
         test: /\.js?$/,
         // 把对 .js 文件的处理转交给 id 为 babel 的 HappyPack 实例
         include: PATHS.src,
+        exclude: /node_modules/,
         use: 'happypack/loader?id=babel'
       },
       {
@@ -259,7 +264,6 @@ const webpackConfig = {
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(pathsToClean, cleanOptions),
     // new webpack.NoEmitOnErrorsPlugin(), // 在编译出现错误时，自动跳过输出阶段。这样可以确保编译出的资源中不会包含错误。
     new webpack.DllReferencePlugin({
       context: project.basePath,
@@ -269,6 +273,8 @@ const webpackConfig = {
     new HappyPack({
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
       id: 'babel',
+      threadPool: happyThreadPool,
+      verbose: true,
       // threads: 4, // 不知为何写了threads 反而变慢了
       // 如何处理 .js 文件，用法和 Loader 配置中一样
       loaders: ['babel-loader?cacheDirectory']
@@ -278,6 +284,8 @@ const webpackConfig = {
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
       id: 'node_modules_less',
       threads: 2, // 不知为何写了threads 反而变慢了
+      // threadPool: happyThreadPool,
+      verbose: true,
       // 如何处理 .less 文件，用法和 Loader 配置中一样
       loaders: cssLoaders({
         sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
