@@ -31,11 +31,14 @@ function cssLoaders(options) {
     }
   };
   if (options.modules) {
-    cssLoader.options = {...cssLoader.options, ...{
-      modules: true,
-      importLoaders: 1,
-      localIdentName:  "[path]___[name]__[local]___[hash:base64:5]"
-    }}
+    cssLoader.options = {
+      ...cssLoader.options,
+      ...{
+        modules: true,
+        importLoaders: 1,
+        localIdentName: "[path]___[name]__[local]___[hash:base64:5]"
+      }
+    }
   }
 
   const postcssLoader = {
@@ -117,8 +120,8 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
-      chunks: 'initial', // 必须三选一： "initial" | "all"(默认就是all) | "async"
-      minSize: 0, // 最小尺寸，默认0
+      chunks: 'all', // 必须三选一： "initial" | "all"(默认就是all) | "async"
+      minSize: 30000, // 最小尺寸，默认0
       minChunks: 1, // 最小 chunk ，默认1
       maxAsyncRequests: 1, // 最大异步请求数， 默认1
       maxInitialRequests: 1, // 最大初始化请求数，默认1
@@ -128,7 +131,7 @@ module.exports = {
         priority: '0', // 缓存组优先级 false | object |
         vendors: {
           // key 为entry中定义的 入口名称
-          test: /[\\/]node_modules[\\/]/, // 正则规则验证，如果符合就提取 chunk
+          test: /react|react-dom|lodash|antd/, // 正则规则验证，如果符合就提取 chunk
           name: 'vendors', // 要缓存的 分隔出来的 chunk 名称
           minSize: 0,
           minChunks: 1,
@@ -137,12 +140,32 @@ module.exports = {
           maxAsyncRequests: 1, // 最大异步请求数， 默认1
           maxInitialRequests: 1, // 最大初始化请求数，默认1
           reuseExistingChunk: true, // 可设置是否重用该chunk（查看源码没有发现默认值）
+        },
+        styles: {
+          name: 'styles',
+          test: /(\.scss|\.less|\.css)$/,
+          chunks: 'all',
+          enforce: true
         }
       }
     }
   },
   resolve: {
-    extensions: ['.js', '.json', 'jsm','.css', '.less', '.scss', '.sass', '.jsx', '.vue']
+    extensions: [
+      '.js', '.jsx', '.vue'
+    ],
+    modules: [
+      path.resolve(__dirname, '../node_modules'),
+      PATHS.src
+    ],
+    alias: {
+      '@': PATHS.src,
+      "actions": path.resolve(__dirname, "../src/actions"),
+      "components": path.resolve(__dirname, "../src/components"),
+      "containers": path.resolve(__dirname, "../src/containers"),
+      "reducers": path.resolve(__dirname, "../src/reducers"),
+      "utils": path.resolve(__dirname, "../src/utils")
+    }
   },
   module: {
     rules: [
@@ -161,13 +184,11 @@ module.exports = {
         test: /\.css$/,
         use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).css,
         include: PATHS.src
-      },
-      {
+      }, {
         test: /\.css$/,
         use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false}).css,
         include: resolve("node_modules")
-      },
-      {
+      }, {
         test: /\.scss$/,
         use: cssLoaders({sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true}).scss
       }, {
