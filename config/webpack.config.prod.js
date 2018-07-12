@@ -1,5 +1,5 @@
 const merge = require('webpack-merge');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const path = require('path');
 

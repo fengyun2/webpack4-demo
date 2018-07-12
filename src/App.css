@@ -3,4 +3,7 @@
   height: 50px;
   border: none;
   color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

@@ -1,7 +1,7 @@
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require('webpack');
 const path = require('path');
@@ -47,8 +47,9 @@ function cssLoaders(options) {
     options: {
       sourceMap: options.sourceMap,
       ident: 'postcss',
-      plugins: [// require('autoprefixer')(), // cssnext 包含autoprefixer require('cssnano')(),
-        require('postcss-cssnext')()]
+      plugins: [/*         // cssnext 包含autoprefixer require('cssnano')(),
+        require('postcss-cssnext')(), */
+        require('postcss-preset-env')()]
     }
   };
 
@@ -67,7 +68,6 @@ function cssLoaders(options) {
 
     // Extract CSS when that option is specified (which is the case during
     // production build)
-    /* loaders.unshift('style-loader'); */
     if (options.extract) {
 
       loaders.unshift(MiniCssExtractPlugin.loader)
@@ -75,8 +75,7 @@ function cssLoaders(options) {
       return loaders
       // return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
     }
-    // return ['style-loader'].concat(loaders);
-    return loaders
+    return ['style-loader'].concat(loaders);
   }
 
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
