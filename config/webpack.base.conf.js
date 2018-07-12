@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HappyPack = require('happypack');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -190,41 +191,61 @@ const webpackConfig = {
         enforce: 'pre',
         loader: 'eslint-loader',
         include: PATHS.src
-      }, {
+      },
+      /*        {
         // .js .jsx用babel解析
         test: /\.js?$/,
         include: PATHS.src,
         loader: 'babel-loader'
-      }, {
+      }, */
+      {
+        test: /\.js?$/,
+        // 把对 .js 文件的处理转交给 id 为 babel 的 HappyPack 实例
+        include: PATHS.src,
+        use: 'happypack/loader?id=babel'
+      },
+      {
         test: /\.css$/,
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
         }).css,
         include: PATHS.src
-      }, {
+      },
+      {
         test: /\.css$/,
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
         }).css,
         include: resolve('node_modules')
-      }, {
+      },
+      {
         test: /\.scss$/,
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
         }).scss
-      }, {
+      },
+
+      {
         test: /\.less$/,
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
         }).less,
         include: PATHS.src
-      }, {
+      },
+      /*       {
         test: /\.less$/, // (用于解析antd的LESS文件)
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
         }).less,
         include: resolve('node_modules')
-      }, {
+      }, */
+      {
+        test: /\.less?$/, // (用于解析antd的LESS文件)
+        // 把对 .less 文件的处理转交给 id 为 less 的 HappyPack 实例
+        include: resolve('node_modules'),
+        use: 'happypack/loader?id=node_modules_less'
+      },
+      {
         // 文件解析
         test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
         include: PATHS.src,
@@ -244,6 +265,23 @@ const webpackConfig = {
       context: project.basePath,
       // eslint-disable-next-line
   manifest: require(path.resolve(project.basePath, 'dll', 'vendors.manifest.json'))
+    }),
+    new HappyPack({
+      // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
+      id: 'babel',
+      // threads: 4, // 不知为何写了threads 反而变慢了
+      // 如何处理 .js 文件，用法和 Loader 配置中一样
+      loaders: ['babel-loader?cacheDirectory']
+    }),
+
+    new HappyPack({
+      // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
+      id: 'node_modules_less',
+      threads: 2, // 不知为何写了threads 反而变慢了
+      // 如何处理 .less 文件，用法和 Loader 配置中一样
+      loaders: cssLoaders({
+        sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
+      }).less
     }),
     new HtmlWebpackPlugin({
       // Required
