@@ -2,6 +2,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require('webpack');
 const path = require('path');
 
@@ -66,10 +67,16 @@ function cssLoaders(options) {
 
     // Extract CSS when that option is specified (which is the case during
     // production build)
+    /* loaders.unshift('style-loader'); */
     if (options.extract) {
-      return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
+
+      loaders.unshift(MiniCssExtractPlugin.loader)
+
+      return loaders
+      // return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
     }
-    return ['style-loader'].concat(loaders);
+    // return ['style-loader'].concat(loaders);
+    return loaders
   }
 
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
@@ -129,14 +136,21 @@ module.exports = {
       cacheGroups: {
         // 这里开始设置缓存的 chunks
         priority: '0', // 缓存组优先级 false | object |
+        /*         commons: {
+          chunks: "initial",
+          minChunks: 2,
+          maxInitialRequests: 5, // The default limit is too small to showcase the effect
+          minSize: 0 // This is example is too small to create commons chunks
+        }, */
         vendors: {
           // key 为entry中定义的 入口名称
-          test: /react|react-dom|lodash|antd/, // 正则规则验证，如果符合就提取 chunk
+          test: /node_modules/, // 正则规则验证，如果符合就提取 chunk
           name: 'vendors', // 要缓存的 分隔出来的 chunk 名称
+          priority: -10,
           minSize: 0,
           minChunks: 1,
           enforce: true,
-          chunks: 'all', // 必须三选一： "initial" | "all" | "async"(默认就是异步)
+          chunks: 'initial', // 必须三选一： "initial" | "all" | "async"(默认就是异步)
           maxAsyncRequests: 1, // 最大异步请求数， 默认1
           maxInitialRequests: 1, // 最大初始化请求数，默认1
           reuseExistingChunk: true, // 可设置是否重用该chunk（查看源码没有发现默认值）
