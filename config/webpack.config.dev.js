@@ -1,17 +1,13 @@
 const merge = require('webpack-merge');
 const webpack = require('webpack');
-const path = require('path');
 
+const project = require('./project.config')
 const baseWebpackConfig = require('./webpack.base.conf');
 
-const PATHS = {
-  src: path.join(__dirname, '../src'),
-  dist: path.join(__dirname, '../dist')
-};
-
 const webpackConfig = merge(baseWebpackConfig, {
+  cache: true,
   output: {
-    path: PATHS.dist,
+    path: project.outDir,
     filename: '[name].js',
     publicPath: '/'
   },
@@ -26,7 +22,7 @@ const webpackConfig = merge(baseWebpackConfig, {
 
   ],
   devServer: {
-    contentBase: PATHS.dist,
+    contentBase: project.outDir,
     compress: true,
     headers: {
       'X-Content-Type-Options': 'nosniff',

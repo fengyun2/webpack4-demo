@@ -105,23 +105,18 @@ function resolve(dir) {
 }
 /* eslint-enable */
 
-const PATHS = {
-  src: path.join(__dirname, '../src'),
-  dist: path.join(__dirname, '../dist')
-};
-
 const webpackConfig = {
-  context: path.resolve(__dirname, '../'), // entry 和 module.rules.loader 选项相对于此目录开始解析
+  context: project.basePath, // entry 和 module.rules.loader 选项相对于此目录开始解析
   mode: isProduction
     ? 'production'
     : 'development',
   entry: {
-    app: [PATHS.src],
+    app: [project.srcDir],
     vendors: project.vendors
     // vendors: Object.keys(packageJson.dependencies) // 已存在dll文件打包了
   },
   output: {
-    path: PATHS.dist, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
+    path: project.outDir, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
     filename: '[name].[chunkhash].js',
     publicPath: '/' // 文件解析路径，index.html中引用的路径会被设置为相对于此路径
   },
@@ -175,10 +170,10 @@ const webpackConfig = {
     ],
     modules: [
       path.resolve(__dirname, '../node_modules'),
-      PATHS.src
+      project.srcDir
     ],
     alias: {
-      '@': PATHS.src,
+      '@': project.srcDir,
       vue: 'vue/dist/vue.esm.js',
       actions: path.resolve(__dirname, '../src/actions'),
       components: path.resolve(__dirname, '../src/components'),
@@ -194,18 +189,18 @@ const webpackConfig = {
         test: /\.js?$/,
         enforce: 'pre',
         loader: 'eslint-loader',
-        include: PATHS.src
+        include: project.srcDir
       },
       /*        {
         // .js .jsx用babel解析
         test: /\.js?$/,
-        include: PATHS.src,
+        include: project.srcDir,
         loader: 'babel-loader'
       }, */
       {
         test: /\.js?$/,
         // 把对 .js 文件的处理转交给 id 为 babel 的 HappyPack 实例
-        include: PATHS.src,
+        include: project.srcDir,
         exclude: /node_modules/,
         use: 'happypack/loader?id=babel'
       },
@@ -214,7 +209,7 @@ const webpackConfig = {
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
         }).css,
-        include: PATHS.src
+        include: project.srcDir
       },
       {
         test: /\.css$/,
@@ -235,7 +230,7 @@ const webpackConfig = {
         use: cssLoaders({
           sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
         }).less,
-        include: PATHS.src
+        include: project.srcDir
       },
       /*       {
         test: /\.less$/, // (用于解析antd的LESS文件)
@@ -253,12 +248,12 @@ const webpackConfig = {
       {
         // 文件解析
         test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
-        include: PATHS.src,
+        include: project.srcDir,
         loader: 'file-loader?name=assets/[name].[ext]'
       }, {
         // 图片解析
         test: /\.(png|jpg|gif)$/,
-        include: PATHS.src,
+        include: project.srcDir,
         loader: 'url-loader?limit=8192&name=assets/[name].[ext]'
       }
     ]
@@ -300,7 +295,7 @@ const webpackConfig = {
       // Optional
       appMountId: 'app',
       title: 'Webpack 4 demo',
-      favicon: path.join(PATHS.src, 'favicon.ico'),
+      favicon: path.join(project.srcDir, 'favicon.ico'),
       meta: [
         {
           name: 'description',
@@ -325,8 +320,8 @@ const webpackConfig = {
 
     new CopyWebpackPlugin([
       {
-        from: path.join(PATHS.src, 'favicon.ico'),
-        to: path.join(PATHS.dist, 'favicon.ico')
+        from: path.join(project.srcDir, 'favicon.ico'),
+        to: path.join(project.outDir, 'favicon.ico')
       },
       {
         from: path.join(project.basePath, 'dll'),
