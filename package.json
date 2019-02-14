@@ -13,7 +13,8 @@
     "commit": "git-cz",
     "prettier": "prettier --write \"{src,mock}/**/*.{js,css,scss,less}\"",
     "release": "standard-version",
-    "eslint": "eslint --fix src/**/*.js"
+    "eslint": "eslint --fix src/**/*.js",
+    "post-update": "yarn upgrade --latest"
   },
   "keywords": ["webpack", "webpack4", "webpack5"],
   "author": "fengyun2",
