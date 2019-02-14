@@ -4,7 +4,7 @@ import styles from './App.css';
 
 const App = () => (
   <div className="App">
-    <button className={styles.button}>Button</button>
+    <button type="button" className={styles.button}>Button</button>
     <Button type="primary">Antd Button</Button>
   </div>
 )

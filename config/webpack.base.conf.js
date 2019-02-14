@@ -1,45 +1,43 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HappyPack = require('happypack');
-const webpack = require('webpack');
-const path = require('path');
-const os = require('os');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const HappyPack = require('happypack')
+const webpack = require('webpack')
+const path = require('path')
+const os = require('os')
 
 const happyThreadPool = HappyPack.ThreadPool({
-  size: os
-    .cpus()
-    .length
-});
+  size: os.cpus().length
+})
 
 const project = require('./project.config')
 
 // const packageJson = require('../package.json');
 
-const TARGET = process.env.npm_lifecycle_event;
-let isProduction = false;
+const TARGET = process.env.npm_lifecycle_event
+let isProduction = false
 if (TARGET === 'dev' || TARGET === 'dev:server' || !TARGET) {
-  isProduction = false;
+  isProduction = false
 }
 if (TARGET === 'build' || TARGET === 'stats') {
-  isProduction = true;
+  isProduction = true
 }
-const sourceMapEnabled = !isProduction;
+const sourceMapEnabled = !isProduction
 
 /**
  * 统一处理css-loader
  * @param {*} options
  */
 function cssLoaders(options) {
-  options = options || {};
+  options = options || {}
 
   const cssLoader = {
     loader: 'css-loader',
     options: {
       sourceMap: options.sourceMap
     }
-  };
+  }
   if (options.modules) {
     cssLoader.options = {
       ...cssLoader.options,
@@ -56,24 +54,24 @@ function cssLoaders(options) {
     options: {
       sourceMap: options.sourceMap,
       ident: 'postcss',
-      plugins: [/*         // cssnext 包含autoprefixer require('cssnano')(),
+      plugins: [
+        /*         // cssnext 包含autoprefixer require('cssnano')(),
         require('postcss-cssnext')(), */
         // eslint-disable-next-line
-        require('postcss-preset-env')()]
+        require('postcss-preset-env')()
+      ]
     }
-  };
+  }
 
   // generate loader string to be used with extract text plugin
   function generateLoaders(loader, loaderOptions) {
-    const loaders = options.usePostCSS
-      ? [cssLoader, postcssLoader]
-      : [cssLoader];
+    const loaders = options.usePostCSS ? [cssLoader, postcssLoader] : [cssLoader]
 
     if (loader) {
       loaders.push({
         loader: `${loader}-loader`,
         options: Object.assign({}, loaderOptions, { sourceMap: options.sourceMap })
-      });
+      })
     }
 
     // Extract CSS when that option is specified (which is the case during
@@ -84,7 +82,7 @@ function cssLoaders(options) {
       return loaders
       // return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
     }
-    return ['style-loader'].concat(loaders);
+    return ['style-loader'].concat(loaders)
   }
 
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
@@ -96,20 +94,21 @@ function cssLoaders(options) {
     scss: generateLoaders('sass'),
     stylus: generateLoaders('stylus'),
     styl: generateLoaders('stylus')
-  };
+  }
 }
 
 /* eslint-disable */
 function resolve(dir) {
-  return path.join(__dirname, '..', dir);
+  return path.join(__dirname, '..', dir)
 }
 /* eslint-enable */
 
 const webpackConfig = {
   context: project.basePath, // entry 和 module.rules.loader 选项相对于此目录开始解析
-  mode: isProduction
-    ? 'production'
-    : 'development',
+  mode: isProduction ? 'production' : 'development',
+  cache: {
+    type: 'filesystem'
+  },
   entry: {
     app: [project.srcDir],
     vendors: project.vendors
@@ -120,7 +119,7 @@ const webpackConfig = {
     filename: '[name].[chunkhash].js',
     publicPath: '/' // 文件解析路径，index.html中引用的路径会被设置为相对于此路径
   },
-  optimization: {
+  /*   optimization: {
     runtimeChunk: {
       name: 'manifest'
     },
@@ -135,12 +134,12 @@ const webpackConfig = {
       cacheGroups: {
         // 这里开始设置缓存的 chunks
         priority: '0', // 缓存组优先级 false | object |
-        /*         commons: {
-          chunks: "initial",
-          minChunks: 2,
-          maxInitialRequests: 5, // The default limit is too small to showcase the effect
-          minSize: 0 // This is example is too small to create commons chunks
-        }, */
+        //         commons: {
+        //   chunks: "initial",
+        //   minChunks: 2,
+        //   maxInitialRequests: 5, // The default limit is too small to showcase the effect
+        //   minSize: 0 // This is example is too small to create commons chunks
+        // },
         // 已存在dll文件打包了
         vendors: {
           // key 为entry中定义的 入口名称
@@ -163,15 +162,10 @@ const webpackConfig = {
         }
       }
     }
-  },
+  }, */
   resolve: {
-    extensions: [
-      '.js', '.jsx', '.vue'
-    ],
-    modules: [
-      path.resolve(__dirname, '../node_modules'),
-      project.srcDir
-    ],
+    extensions: ['.js', '.jsx', '.vue'],
+    modules: [path.resolve(__dirname, '../node_modules'), project.srcDir],
     alias: {
       '@': project.srcDir,
       vue: 'vue/dist/vue.esm.js',
@@ -207,28 +201,40 @@ const webpackConfig = {
       {
         test: /\.css$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
+          sourceMap: sourceMapEnabled,
+          extract: isProduction,
+          usePostCSS: true,
+          modules: true
         }).css,
         include: project.srcDir
       },
       {
         test: /\.css$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
+          sourceMap: sourceMapEnabled,
+          extract: isProduction,
+          usePostCSS: true,
+          modules: false
         }).css,
         include: resolve('node_modules')
       },
       {
         test: /\.scss$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
+          sourceMap: sourceMapEnabled,
+          extract: isProduction,
+          usePostCSS: true,
+          modules: true
         }).scss
       },
 
       {
         test: /\.less$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: true
+          sourceMap: sourceMapEnabled,
+          extract: isProduction,
+          usePostCSS: true,
+          modules: true
         }).less,
         include: project.srcDir
       },
@@ -250,7 +256,8 @@ const webpackConfig = {
         test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
         include: project.srcDir,
         loader: 'file-loader?name=assets/[name].[ext]'
-      }, {
+      },
+      {
         // 图片解析
         test: /\.(png|jpg|gif)$/,
         include: project.srcDir,
@@ -263,7 +270,7 @@ const webpackConfig = {
     new webpack.DllReferencePlugin({
       context: project.basePath,
       // eslint-disable-next-line
-  manifest: require(path.resolve(project.basePath, 'dll', 'vendors.manifest.json'))
+      manifest: require(path.resolve(project.basePath, 'dll', 'vendors.manifest.json'))
     }),
     new HappyPack({
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
@@ -283,7 +290,10 @@ const webpackConfig = {
       verbose: true,
       // 如何处理 .less 文件，用法和 Loader 配置中一样
       loaders: cssLoaders({
-        sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
+        sourceMap: sourceMapEnabled,
+        extract: isProduction,
+        usePostCSS: true,
+        modules: false
       }).less
     }),
     new HtmlWebpackPlugin({
@@ -300,7 +310,8 @@ const webpackConfig = {
         {
           name: 'description',
           content: 'A better default template for html-webpack-plugin.'
-        }, {
+        },
+        {
           name: 'robots',
           content: 'noindex,nofollow'
         }
@@ -315,7 +326,7 @@ const webpackConfig = {
         useShortDoctype: true,
         html5: true
       },
-      scripts: ['./dll/vendors.dll.js'], // 与dll配置文件中output.fileName对齐
+      scripts: ['./dll/vendors.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
 
     new CopyWebpackPlugin([
@@ -329,6 +340,6 @@ const webpackConfig = {
       }
     ])
   ]
-};
+}
 
 module.exports = webpackConfig

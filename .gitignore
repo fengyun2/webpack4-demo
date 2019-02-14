@@ -4,6 +4,7 @@ node_modules
 # output
 dist/
 stats.json
+dll/
 
 # log files
 yarn-error.log
