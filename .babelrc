@@ -5,11 +5,7 @@
       {
         "modules": false,
         "targets": {
-          "browsers": [
-            ">1%",
-            "last 2 versions",
-            "safari >= 7"
-          ]
+          "browsers": [">1%", "last 2 versions", "safari >= 7"]
         }
       }
     ],
@@ -19,13 +15,18 @@
     [
       "@babel/plugin-transform-runtime",
       {
-        "helpers": false,
-        "polyfill": false,
-        "regenerator": true,
-        "moduleName": "@babel/runtime"
+        // "helpers": false
+        // "polyfill": false,
+        // "regenerator": true
+        // "moduleName": "@babel/runtime"
       }
     ],
-    "transform-decorators-legacy",
+    [
+      "@babel/plugin-proposal-decorators",
+      {
+        "legacy": true
+      }
+    ],
     "@babel/plugin-proposal-class-properties",
     "@babel/plugin-syntax-dynamic-import",
     "react-loadable/babel",
@@ -38,8 +39,5 @@
       }
     ]
   ],
-  "ignore": [
-    "xxx.js",
-    "xxx/**/*.js"
-  ]
+  "ignore": ["xxx.js", "xxx/**/*.js"]
 }

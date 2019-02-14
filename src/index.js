@@ -7,7 +7,7 @@ import foo from './demo/foo';
 import './global.scss';
 import './test.css';
 
-ReactDOM.render(<App />, document.getElementById('app'))
+ReactDOM.render(<App />, document.getElementById('app'));
 
 console.info('welcome to webpack4!');
 foo();
