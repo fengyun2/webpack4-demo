@@ -2,16 +2,21 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const ESLintFormatter = require('eslint-friendly-formatter')
+const WebpackBar = require('webpackbar')
 const HappyPack = require('happypack')
 const webpack = require('webpack')
 const path = require('path')
 const os = require('os')
+// const chalk = require('chalk')
 
 const happyThreadPool = HappyPack.ThreadPool({
   size: os.cpus().length
 })
 
-const project = require('./project.config')
+const {
+  esLint, basePath, srcDir, outDir
+} = require('./project.config')
 
 // const packageJson = require('../package.json');
 
@@ -55,8 +60,6 @@ function cssLoaders(options) {
       sourceMap: options.sourceMap,
       ident: 'postcss',
       plugins: [
-        /*         // cssnext 包含autoprefixer require('cssnano')(),
-        require('postcss-cssnext')(), */
         // eslint-disable-next-line
         require('postcss-preset-env')()
       ]
@@ -97,104 +100,60 @@ function cssLoaders(options) {
   }
 }
 
+const ESLintRule = () => ({
+  test: /(\.jsx|\.js)$/,
+  use: {
+    loader: 'eslint-loader?cacheDirectory',
+    options: {
+      formatter: ESLintFormatter
+    }
+  },
+  enforce: 'pre',
+  include: srcDir,
+  exclude: /node_modules/
+})
+
 /* eslint-disable */
 function resolve(dir) {
-  return path.join(__dirname, '..', dir)
+  return path.resolve(__dirname, '..', dir)
 }
 /* eslint-enable */
 
 const webpackConfig = {
-  context: project.basePath, // entry 和 module.rules.loader 选项相对于此目录开始解析
+  context: basePath, // entry 和 module.rules.loader 选项相对于此目录开始解析
   mode: isProduction ? 'production' : 'development',
   cache: {
     type: 'filesystem'
   },
   entry: {
-    app: [project.srcDir],
-    vendors: project.vendors
-    // vendors: Object.keys(packageJson.dependencies) // 已存在dll文件打包了
+    app: [srcDir]
   },
   output: {
-    path: project.outDir, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
+    path: outDir, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
     filename: '[name].[chunkhash].js',
     publicPath: '/' // 文件解析路径，index.html中引用的路径会被设置为相对于此路径
   },
-  /*   optimization: {
-    runtimeChunk: {
-      name: 'manifest'
-    },
-    // minimizer: true, // [new UglifyJsPlugin({...})]
-    splitChunks: {
-      chunks: 'all', // 必须三选一： "initial" | "all"(默认就是all) | "async"
-      minSize: 30000, // 最小尺寸，默认0
-      minChunks: 1, // 最小 chunk ，默认1
-      maxAsyncRequests: 1, // 最大异步请求数， 默认1(目前改为其他值会导致页面加载不出来)
-      maxInitialRequests: 1, // 最大初始化请求数，默认1
-      name: () => { }, // 名称，此选项可接收 function
-      cacheGroups: {
-        // 这里开始设置缓存的 chunks
-        priority: '0', // 缓存组优先级 false | object |
-        //         commons: {
-        //   chunks: "initial",
-        //   minChunks: 2,
-        //   maxInitialRequests: 5, // The default limit is too small to showcase the effect
-        //   minSize: 0 // This is example is too small to create commons chunks
-        // },
-        // 已存在dll文件打包了
-        vendors: {
-          // key 为entry中定义的 入口名称
-          test: /node_modules\/(.*)\.js/, // 正则规则验证，如果符合就提取 chunk
-          name: 'vendors', // 要缓存的 分隔出来的 chunk 名称
-          priority: -10,
-          minSize: 0,
-          minChunks: 1,
-          enforce: true,
-          chunks: 'initial', // 必须三选一： "initial" | "all" | "async"(默认就是异步)
-          maxAsyncRequests: 1, // 最大异步请求数， 默认1
-          maxInitialRequests: 1, // 最大初始化请求数，默认1
-          reuseExistingChunk: true, // 可设置是否重用该chunk（查看源码没有发现默认值）
-        },
-        styles: {
-          name: 'styles',
-          test: /(\.scss|\.less|\.css)$/,
-          chunks: 'all',
-          enforce: true
-        }
-      }
-    }
-  }, */
   resolve: {
     extensions: ['.js', '.jsx', '.vue'],
-    modules: [path.resolve(__dirname, '../node_modules'), project.srcDir],
+    modules: [srcDir, 'node_modules'],
     alias: {
-      '@': project.srcDir,
+      '@': srcDir,
       vue: 'vue/dist/vue.esm.js',
-      actions: path.resolve(__dirname, '../src/actions'),
-      components: path.resolve(__dirname, '../src/components'),
-      containers: path.resolve(__dirname, '../src/containers'),
-      reducers: path.resolve(__dirname, '../src/reducers'),
-      utils: path.resolve(__dirname, '../src/utils')
+      actions: resolve('src/actions'),
+      components: resolve('src/components'),
+      containers: resolve('src/containers'),
+      reducers: resolve('src/reducers'),
+      utils: resolve('src/utils')
     }
   },
   module: {
     rules: [
+      ...(esLint ? [ESLintRule()] : []),
+
       {
-        // 编译前通过eslint检查代码 (注释掉即可取消eslint检测)
-        test: /\.js?$/,
-        enforce: 'pre',
-        loader: 'eslint-loader',
-        include: project.srcDir
-      },
-      /*        {
-        // .js .jsx用babel解析
-        test: /\.js?$/,
-        include: project.srcDir,
-        loader: 'babel-loader'
-      }, */
-      {
-        test: /\.js?$/,
+        test: /(\.jsx|\.js)$/,
         // 把对 .js 文件的处理转交给 id 为 babel 的 HappyPack 实例
-        include: project.srcDir,
+        include: srcDir,
         exclude: /node_modules/,
         use: 'happypack/loader?id=babel'
       },
@@ -206,7 +165,7 @@ const webpackConfig = {
           usePostCSS: true,
           modules: true
         }).css,
-        include: project.srcDir
+        include: srcDir
       },
       {
         test: /\.css$/,
@@ -236,7 +195,7 @@ const webpackConfig = {
           usePostCSS: true,
           modules: true
         }).less,
-        include: project.srcDir
+        include: srcDir
       },
       /*       {
         test: /\.less$/, // (用于解析antd的LESS文件)
@@ -254,13 +213,13 @@ const webpackConfig = {
       {
         // 文件解析
         test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
-        include: project.srcDir,
+        include: srcDir,
         loader: 'file-loader?name=assets/[name].[ext]'
       },
       {
         // 图片解析
         test: /\.(png|jpg|gif)$/,
-        include: project.srcDir,
+        include: srcDir,
         loader: 'url-loader?limit=8192&name=assets/[name].[ext]'
       }
     ]
@@ -268,9 +227,9 @@ const webpackConfig = {
   plugins: [
     // new webpack.NoEmitOnErrorsPlugin(), // 在编译出现错误时，自动跳过输出阶段。这样可以确保编译出的资源中不会包含错误。
     new webpack.DllReferencePlugin({
-      context: project.basePath,
+      context: basePath,
       // eslint-disable-next-line
-      manifest: require(path.resolve(project.basePath, 'dll', 'vendors.manifest.json'))
+      manifest: require(path.resolve(basePath, 'dll', 'vendor.manifest.json'))
     }),
     new HappyPack({
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
@@ -296,16 +255,20 @@ const webpackConfig = {
         modules: false
       }).less
     }),
+    new MiniCssExtractPlugin({
+      filename: 'css/[name].[chunkhash:8].css',
+      chunkFilename: 'css/[name].[contenthash:8].css'
+    }),
     new HtmlWebpackPlugin({
       // Required
-      inject: false,
+      inject: true,
       // template: require('html-webpack-template'),
       template: 'node_modules/html-webpack-template/index.ejs',
 
       // Optional
       appMountId: 'app',
       title: 'Webpack 4 demo',
-      favicon: path.join(project.srcDir, 'favicon.ico'),
+      favicon: path.join(srcDir, 'favicon.ico'),
       meta: [
         {
           name: 'description',
@@ -326,19 +289,24 @@ const webpackConfig = {
         useShortDoctype: true,
         html5: true
       },
-      scripts: ['./dll/vendors.dll.js'] // 与dll配置文件中output.fileName对齐
+      scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
 
     new CopyWebpackPlugin([
       {
-        from: path.join(project.srcDir, 'favicon.ico'),
-        to: path.join(project.outDir, 'favicon.ico')
+        from: path.join(srcDir, 'favicon.ico'),
+        to: path.join(outDir, 'favicon.ico')
       },
       {
-        from: path.join(project.basePath, 'dll'),
-        to: path.join(project.basePath, 'dist', 'dll')
+        from: path.join(basePath, 'dll'),
+        to: path.join(basePath, 'dist', 'dll')
       }
-    ])
+    ]),
+
+    new WebpackBar({
+      minimal: false,
+      compiledIn: false
+    })
   ]
 }
 

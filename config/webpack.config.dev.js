@@ -1,10 +1,11 @@
-const merge = require('webpack-merge');
-const webpack = require('webpack');
+const merge = require('webpack-merge')
+const webpack = require('webpack')
 
 const project = require('./project.config')
-const baseWebpackConfig = require('./webpack.base.conf');
+const baseWebpackConfig = require('./webpack.base.conf')
 
 const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'development',
   cache: true,
   output: {
     path: project.outDir,
@@ -16,11 +17,7 @@ const webpackConfig = merge(baseWebpackConfig, {
   watchOptions: {
     ignored: /node_modules/
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NamedModulesPlugin(),
-
-  ],
+  plugins: [new webpack.HotModuleReplacementPlugin(), new webpack.NamedModulesPlugin()],
   devServer: {
     contentBase: project.outDir,
     compress: true,
@@ -40,6 +37,6 @@ const webpackConfig = merge(baseWebpackConfig, {
   stats: {
     children: false
   }
-});
+})
 
-module.exports = webpackConfig;
+module.exports = webpackConfig

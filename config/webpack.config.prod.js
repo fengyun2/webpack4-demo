@@ -1,57 +1,75 @@
-const merge = require('webpack-merge');
-// const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const merge = require('webpack-merge')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
+const WebpackParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
-const path = require('path');
+const path = require('path')
 
-const baseWebpackConfig = require('./webpack.base.conf');
+const baseWebpackConfig = require('./webpack.base.conf')
+const { vendor, outDir } = require('./project.config')
 
 // the path(s) that should be cleaned
-const pathsToClean = ['dist/**/*.*'];
+const pathsToClean = ['dist/**/*.*']
 
 // the clean options to use
 const cleanOptions = {
-  root: path.resolve(__dirname, '../'),
+  root: path.resolve(__dirname, '../')
   // verbose: true, dry: false,
-};
+}
 
 const PATHS = {
   src: path.join(__dirname, '../src'),
   dist: path.join(__dirname, '../dist')
-};
+}
 
 const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'production',
+  entry: {
+    vendor
+  },
   output: {
-    path: PATHS.dist,
+    path: outDir,
     filename: '[name].[chunkhash].js',
     publicPath: '/'
   },
-  optimization: {
-    minimizer: [
-      new UglifyJsPlugin({
-        cache: true,
-        parallel: true,
-        sourceMap: true
-      }),
-      new OptimizeCSSAssetsPlugin({}) // use OptimizeCSSAssetsPlugin
-    ]
-  },
-  module: {
-    /*     rules: [
-      // 不能添加babel-loader规则，否则js优化失效 {   test: /\.js$/,   exclude: /node_modules/,
-      // use: {     loader: 'babel-loader'   } },
-
-    ] */
-  },
+  module: {},
   plugins: [
-    /*   new ExtractTextPlugin({
-    filename: '[name].[contenthash:8].css', allChunks: false, // 制定提取css的范围,提取初始化（非异步加载）,此时在commonChunk插件下，css也会被当成一个chunk,所有要用contenthash
-  }), */
-    new CleanWebpackPlugin(pathsToClean, cleanOptions),
-    new MiniCssExtractPlugin({ filename: 'css/[name].[chunkhash:8].css', chunkFilename: 'css/[name].[contenthash:8].css' })]
-});
+    new OptimizeCSSAssetsPlugin({
+      cssProcessorOptions: { safe: true }
+    }), // use OptimizeCSSAssetsPlugin
+    new WebpackParallelUglifyPlugin({
+      uglifyJS: {
+        output: {
+          beautify: false, // 不需要格式化
+          comments: false // 不保留注释
+        },
+        compress: {
+          warnings: false, // 在UglifyJs删除没有用到的代码时不输出警告
+          drop_console: true, // 删除所有的 `console` 语句，可以兼容ie浏览器
+          collapse_vars: true, // 内嵌定义了但是只用到一次的变量
+          reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
+        }
+      }
+    }),
+    new CleanWebpackPlugin(pathsToClean, cleanOptions)
+  ],
+  optimization: {
+    sideEffects: false,
+    splitChunks: {
+      chunks: 'all',
+      minSize: 30000,
+      minChunks: 1,
+      cacheGroups: {
+        vendor: {
+          name: 'vendor',
+          test: /[\\/]node_modules[\\/]/,
+          chunks: 'all',
+          priority: -10,
+          enforce: true
+        }
+      }
+    }
+  }
+})
 
-module.exports = webpackConfig;
+module.exports = webpackConfig
