@@ -82,7 +82,7 @@ function cssLoaders(options) {
   return {
     css: generateLoaders(),
     postcss: generateLoaders(),
-    less: generateLoaders('less'),
+    less: generateLoaders('less', { javascriptEnabled: true }),
     sass: generateLoaders('sass', { indentedSyntax: true }),
     scss: generateLoaders('sass'),
     stylus: generateLoaders('stylus'),
@@ -125,7 +125,7 @@ const webpackConfig = {
     publicPath: '/' // 文件解析路径，index.html中引用的路径会被设置为相对于此路径
   },
   resolve: {
-    extensions: ['.js', '.jsx', '.vue'],
+    extensions: ['.js', '.jsx', '.vue', '.less'],
     modules: [srcDir, 'node_modules'],
     alias: {
       '@': srcDir,
@@ -198,7 +198,13 @@ const webpackConfig = {
         test: /\.less?$/, // (用于解析antd的LESS文件)
         // 把对 .less 文件的处理转交给 id 为 less 的 HappyPack 实例
         include: [resolve('node_modules/antd')],
-        use: 'happypack/loader?id=node_modules_less'
+        // use: 'happypack/loader?id=node_modules_less'
+        use: cssLoaders({
+          sourceMap,
+          extract: isProduction,
+          usePostCSS: false, // 编译 antd less时无法引入postcss
+          modules: false
+        }).less
       },
       {
         // 文件解析
@@ -258,7 +264,7 @@ const webpackConfig = {
       // 如何处理 .js 文件，用法和 Loader 配置中一样
       loaders: ['babel-loader?cacheDirectory']
     }),
-
+    // 暂停使用happypack编译less: https://github.com/amireh/happypack/issues/223
     new HappyPack({
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
       id: 'node_modules_less',
@@ -269,7 +275,7 @@ const webpackConfig = {
       loaders: cssLoaders({
         sourceMap,
         extract: isProduction,
-        usePostCSS: true,
+        usePostCSS: false, // 编译 antd less时无法引入postcss
         modules: false
       }).less
     }),

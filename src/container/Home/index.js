@@ -1,5 +1,5 @@
 import React from 'react'
-// import { Button } from 'antd'
+import { Button } from 'antd'
 import styles from './index.scss'
 
 const Home = () => (
@@ -7,7 +7,7 @@ const Home = () => (
     <button type="button" className={styles.btn}>
       home - 按钮
     </button>
-    {/* <Button className={styles.btn}>home-按钮</Button> */}
+    <Button className={styles.btn}>home-按钮</Button>
   </div>
 )
 
