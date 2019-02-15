@@ -202,7 +202,7 @@ const webpackConfig = {
         use: cssLoaders({
           sourceMap,
           extract: isProduction,
-          usePostCSS: false, // 编译 antd less时无法引入postcss
+          usePostCSS: true,
           modules: false
         }).less
       },
