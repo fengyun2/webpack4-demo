@@ -68,6 +68,9 @@ const webpackConfig = merge(baseWebpackConfig, {
           enforce: true
         }
       }
+    },
+    runtimeChunk: {
+      name: "manifest"
     }
   }
 })

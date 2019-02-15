@@ -38,7 +38,7 @@ function cssLoaders(options) {
       ...{
         modules: true,
         importLoaders: 1,
-        localIdentName: '[path]___[name]__[local]___[hash:base64:5]'
+        localIdentName: '[name]__[local]--[hash:base64:5]'
       }
     }
   }
@@ -90,7 +90,7 @@ function cssLoaders(options) {
 }
 
 const ESLintRule = () => ({
-  test: /(\.jsx|\.js)$/,
+  test: /\.jsx?$/,
   use: {
     loader: 'eslint-loader?cacheDirectory',
     options: {
@@ -140,7 +140,7 @@ const webpackConfig = {
       ...(esLint ? [ESLintRule()] : []),
 
       {
-        test: /(\.jsx|\.js)$/,
+        test: /\.jsx?$/,
         // 把对 .js 文件的处理转交给 id 为 babel 的 HappyPack 实例
         include: srcDir,
         exclude: /node_modules/,
@@ -186,30 +186,51 @@ const webpackConfig = {
         }).less,
         include: srcDir
       },
-      /*       {
-        test: /\.less$/, // (用于解析antd的LESS文件)
-        use: cssLoaders({
-          sourceMap: sourceMap, extract: isProduction, usePostCSS: true, modules: false
-        }).less,
-        include: resolve('node_modules')
-      }, */
       {
         test: /\.less?$/, // (用于解析antd的LESS文件)
         // 把对 .less 文件的处理转交给 id 为 less 的 HappyPack 实例
-        include: resolve('node_modules'),
+        include: [resolve('node_modules/antd')],
         use: 'happypack/loader?id=node_modules_less'
       },
       {
         // 文件解析
-        test: /\.(eot|woff|svg|ttf|woff2|appcache|mp3|mp4|pdf)(\?|$)/,
+        test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
         include: srcDir,
-        loader: 'file-loader?name=assets/[name].[ext]'
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 8192,
+              name: isProduction ? 'fonts/[name].[hash:7].[ext]' : 'fonts/[name].[ext]'
+            }
+          }
+        ]
       },
       {
         // 图片解析
-        test: /\.(png|jpg|gif)$/,
+        test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         include: srcDir,
-        loader: 'url-loader?limit=8192&name=assets/[name].[ext]'
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 8192,
+              name: isProduction ? 'images/[name].[hash:7].[ext]' : 'images/[name].[ext]'
+            }
+          }
+        ]
+      },
+      {
+        // 文件解析
+        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac|pdf)(\?.*)?$/,
+        include: srcDir,
+        use: {
+          loader: 'url-loader',
+          options: {
+            limit: 10,
+            name: isProduction ? 'media/[name].[hash:7].[ext]' : 'media/[name].[ext]'
+          }
+        }
       }
     ]
   },

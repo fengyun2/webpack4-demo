@@ -13,7 +13,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     publicPath: '/'
   },
 
-  devtool: 'inline-source-map', // 报错的时候在控制台输出哪一行报错
+  devtool: 'cheap-module-eval-source-map', // 报错的时候在控制台输出哪一行报错
   watchOptions: {
     ignored: /node_modules/
   },
@@ -32,7 +32,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     },
     port: 8080,
     publicPath: 'http://localhost:8080/',
-    hot: true
+    hot: true,
+    inline: true
   },
   stats: {
     children: false

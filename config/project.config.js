@@ -12,6 +12,6 @@ module.exports = {
   sourceMap: sourceMapEnabled,
   esLint: true,
   externals: {},
-  vendor: ['react', 'react-dom', 'react-loadable']
+  vendor: ['react', 'react-dom']
   // 当 (dll不存在) (vendor被改变) (包的版本被更换) 时，请 npm run dll。
 }
