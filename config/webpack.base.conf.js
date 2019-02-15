@@ -8,27 +8,16 @@ const HappyPack = require('happypack')
 const webpack = require('webpack')
 const path = require('path')
 const os = require('os')
-// const chalk = require('chalk')
 
 const happyThreadPool = HappyPack.ThreadPool({
   size: os.cpus().length
 })
 
 const {
-  esLint, basePath, srcDir, outDir
+  sourceMap, esLint, basePath, srcDir, outDir
 } = require('./project.config')
 
-// const packageJson = require('../package.json');
-
-const TARGET = process.env.npm_lifecycle_event
-let isProduction = false
-if (TARGET === 'dev' || TARGET === 'dev:server' || !TARGET) {
-  isProduction = false
-}
-if (TARGET === 'build' || TARGET === 'stats') {
-  isProduction = true
-}
-const sourceMapEnabled = !isProduction
+const isProduction = process.env.NODE_ENV == 'production'
 
 /**
  * 统一处理css-loader
@@ -160,7 +149,7 @@ const webpackConfig = {
       {
         test: /\.css$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled,
+          sourceMap,
           extract: isProduction,
           usePostCSS: true,
           modules: true
@@ -170,7 +159,7 @@ const webpackConfig = {
       {
         test: /\.css$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled,
+          sourceMap,
           extract: isProduction,
           usePostCSS: true,
           modules: false
@@ -180,7 +169,7 @@ const webpackConfig = {
       {
         test: /\.scss$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled,
+          sourceMap,
           extract: isProduction,
           usePostCSS: true,
           modules: true
@@ -190,7 +179,7 @@ const webpackConfig = {
       {
         test: /\.less$/,
         use: cssLoaders({
-          sourceMap: sourceMapEnabled,
+          sourceMap,
           extract: isProduction,
           usePostCSS: true,
           modules: true
@@ -200,7 +189,7 @@ const webpackConfig = {
       /*       {
         test: /\.less$/, // (用于解析antd的LESS文件)
         use: cssLoaders({
-          sourceMap: sourceMapEnabled, extract: isProduction, usePostCSS: true, modules: false
+          sourceMap: sourceMap, extract: isProduction, usePostCSS: true, modules: false
         }).less,
         include: resolve('node_modules')
       }, */
@@ -249,7 +238,7 @@ const webpackConfig = {
       verbose: true,
       // 如何处理 .less 文件，用法和 Loader 配置中一样
       loaders: cssLoaders({
-        sourceMap: sourceMapEnabled,
+        sourceMap,
         extract: isProduction,
         usePostCSS: true,
         modules: false

@@ -1,14 +1,6 @@
 const path = require('path')
 
-const TARGET = process.env.npm_lifecycle_event
-let isProduction = false
-if (TARGET === 'dev' || TARGET === 'dev:server' || !TARGET) {
-  isProduction = false
-}
-if (TARGET === 'build' || TARGET === 'stats') {
-  isProduction = true
-}
-
+const isProduction = process.env.NODE_ENV == 'production'
 const sourceMapEnabled = !isProduction
 
 module.exports = {
