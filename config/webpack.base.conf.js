@@ -3,6 +3,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const ESLintFormatter = require('eslint-friendly-formatter')
+const { VueLoaderPlugin } = require('vue-loader')
 const WebpackBar = require('webpackbar')
 const HappyPack = require('happypack')
 const webpack = require('webpack')
@@ -115,7 +116,8 @@ const webpackConfig = {
     type: 'filesystem'
   },
   entry: {
-    app: [srcDir]
+    app: [path.resolve(srcDir, 'index.js')] // react
+    // app: [path.resolve(srcDir, 'vue_index.js')] // vue
   },
   output: {
     path: outDir, // 将打包好的文件放在此路径下，dev模式中，只会在内存中存在，不会真正的打包到此路径
@@ -147,12 +149,18 @@ const webpackConfig = {
         use: 'happypack/loader?id=babel'
       },
       {
+        test: /\.vue$/,
+        include: srcDir,
+        exclude: /node_modules/,
+        use: 'vue-loader'
+      },
+      {
         test: /\.css$/,
         use: cssLoaders({
           sourceMap,
           extract: isProduction,
           usePostCSS: true,
-          modules: true
+          modules: true // modules若设置为true后，vue中的样式会丢失，切记切记！！！
         }).css,
         include: srcDir
       },
@@ -271,7 +279,7 @@ const webpackConfig = {
     }),
     new HtmlWebpackPlugin({
       // Required
-      inject: true,
+      inject: false,
       // template: require('html-webpack-template'),
       template: 'node_modules/html-webpack-template/index.ejs',
 
@@ -301,7 +309,7 @@ const webpackConfig = {
       },
       scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
-
+    new VueLoaderPlugin(),
     new CopyWebpackPlugin([
       {
         from: path.join(srcDir, 'favicon.ico'),
