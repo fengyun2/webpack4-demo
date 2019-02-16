@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const ESLintFormatter = require('eslint-friendly-formatter')
 const { VueLoaderPlugin } = require('vue-loader')
 const WebpackBar = require('webpackbar')
+const PrerenderSPAPlugin = require('prerender-spa-plugin')
 const HappyPack = require('happypack')
 const webpack = require('webpack')
 const path = require('path')
@@ -316,6 +317,10 @@ const webpackConfig = {
       scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
     new VueLoaderPlugin(),
+    new PrerenderSPAPlugin({
+      routes: ['/'],
+      staticDir: path.join(basePath, 'dist')
+    }),
     new CopyWebpackPlugin([
       {
         from: path.join(srcDir, 'favicon.ico'),
@@ -326,7 +331,6 @@ const webpackConfig = {
         to: path.join(basePath, 'dist', 'dll')
       }
     ]),
-
     new WebpackBar({
       minimal: false,
       compiledIn: false

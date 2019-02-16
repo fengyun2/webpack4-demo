@@ -35,10 +35,14 @@ const webpackConfig = merge(baseWebpackConfig, {
     port: 8080,
     publicPath: 'http://localhost:8080/',
     hot: true,
-    inline: true
+    inline: true,
+    noInfo: true
   },
   stats: {
     children: false
+  },
+  performance: {
+    hints: false
   }
 })
 
