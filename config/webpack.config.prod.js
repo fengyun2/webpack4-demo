@@ -2,11 +2,11 @@ const merge = require('webpack-merge')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const WebpackParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-
+const PrerenderSPAPlugin = require('prerender-spa-plugin')
 const path = require('path')
 
 const baseWebpackConfig = require('./webpack.base.conf')
-const { vendor, outDir } = require('./project.config')
+const { basePath, vendor, outDir } = require('./project.config')
 
 // the path(s) that should be cleaned
 const pathsToClean = ['dist/**/*.*']
@@ -15,11 +15,6 @@ const pathsToClean = ['dist/**/*.*']
 const cleanOptions = {
   root: path.resolve(__dirname, '../')
   // verbose: true, dry: false,
-}
-
-const PATHS = {
-  src: path.join(__dirname, '../src'),
-  dist: path.join(__dirname, '../dist')
 }
 
 const webpackConfig = merge(baseWebpackConfig, {
@@ -51,6 +46,10 @@ const webpackConfig = merge(baseWebpackConfig, {
         }
       }
     }),
+    new PrerenderSPAPlugin({
+      routes: ['/'],
+      staticDir: path.join(basePath, 'dist')
+    }),
     new CleanWebpackPlugin(pathsToClean, cleanOptions)
   ],
   optimization: {
@@ -70,7 +69,7 @@ const webpackConfig = merge(baseWebpackConfig, {
       }
     },
     runtimeChunk: {
-      name: "manifest"
+      name: 'manifest'
     }
   }
 })

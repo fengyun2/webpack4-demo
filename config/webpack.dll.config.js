@@ -1,3 +1,4 @@
+/* 暂时废弃，改为由autodll-webpack-plugin插件自动生成dll文件并插入到index.html */
 const path = require('path')
 const webpack = require('webpack')
 const WebpackBar = require('webpackbar')

@@ -5,9 +5,10 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const ESLintFormatter = require('eslint-friendly-formatter')
 const { VueLoaderPlugin } = require('vue-loader')
 const WebpackBar = require('webpackbar')
-const PrerenderSPAPlugin = require('prerender-spa-plugin')
+// const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin')
+const AutoDllPlugin = require('autodll-webpack-plugin')
 const HappyPack = require('happypack')
-const webpack = require('webpack')
+// const webpack = require('webpack')
 const path = require('path')
 const os = require('os')
 
@@ -16,7 +17,7 @@ const happyThreadPool = HappyPack.ThreadPool({
 })
 
 const {
-  sourceMap, esLint, basePath, srcDir, outDir
+  sourceMap, esLint, basePath, srcDir, outDir, vendor
 } = require('./project.config')
 
 const isProduction = process.env.NODE_ENV == 'production'
@@ -251,11 +252,11 @@ const webpackConfig = {
   },
   plugins: [
     // new webpack.NoEmitOnErrorsPlugin(), // 在编译出现错误时，自动跳过输出阶段。这样可以确保编译出的资源中不会包含错误。
-    new webpack.DllReferencePlugin({
-      context: basePath,
-      // eslint-disable-next-line
-      manifest: require(path.resolve(basePath, 'dll', 'vendor.manifest.json'))
-    }),
+    // new webpack.DllReferencePlugin({
+    //   context: basePath,
+    //   // eslint-disable-next-line
+    //   manifest: require(path.resolve(basePath, 'dll', 'vendor.manifest.json'))
+    // }),
     new HappyPack({
       // 用唯一的标识符 id 来代表当前的 HappyPack 是用来处理一类特定的文件
       id: 'babel',
@@ -286,13 +287,14 @@ const webpackConfig = {
     }),
     new HtmlWebpackPlugin({
       // Required
-      inject: false,
+      inject: true,
       // template: require('html-webpack-template'),
-      template: 'node_modules/html-webpack-template/index.ejs',
+      // template: 'node_modules/html-webpack-template/index.ejs',
+      template: path.join(basePath, 'index.html'),
 
       // Optional
       appMountId: 'app',
-      title: 'Webpack 4 demo',
+      title: 'React App',
       favicon: path.join(srcDir, 'favicon.ico'),
       meta: [
         {
@@ -313,23 +315,32 @@ const webpackConfig = {
         preserveLineBreaks: true,
         useShortDoctype: true,
         html5: true
-      },
-      scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
+      }
+      // scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
+    new AutoDllPlugin({
+      inject: true, // will inject the DLL bundles to index.html
+      debug: isProduction,
+      filename: '[name]_[hash].dll.js',
+      // path: path.join(basePath, 'dll'),
+      entry: {
+        vendor
+      }
+    }),
+    // new HtmlWebpackIncludeAssetsPlugin({
+    //   assets: ['./dll/vendor.dll.js'],
+    //   append: false
+    // }),
     new VueLoaderPlugin(),
-    new PrerenderSPAPlugin({
-      routes: ['/'],
-      staticDir: path.join(basePath, 'dist')
-    }),
     new CopyWebpackPlugin([
       {
         from: path.join(srcDir, 'favicon.ico'),
         to: path.join(outDir, 'favicon.ico')
-      },
-      {
-        from: path.join(basePath, 'dll'),
-        to: path.join(basePath, 'dist', 'dll')
       }
+      // {
+      //   from: path.join(basePath, 'dll'),
+      //   to: path.join(basePath, 'dist', 'dll')
+      // }
     ]),
     new WebpackBar({
       minimal: false,
