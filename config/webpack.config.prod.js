@@ -88,6 +88,7 @@ const webpackConfig = merge(baseWebpackConfig, {
       navigateFallbackWhitelist: [/^(?!\/__).*/], // 忽略从/__开始的网址，参考 https://github.com/facebookincubator/create-react-app/issues/2237#issuecomment-302693219
       staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/, /\.cache$/] // 不缓存sourcemaps,它们太大了
     }),
+    // 这里是用于把manifest.json打包时复制到/dist下 （PWA）
     new CopyWebpackPlugin([
       { from: path.join(basePath, './public/manifest.json'), to: path.join(outDir, './manifest.json') }
     ]),
@@ -96,15 +97,22 @@ const webpackConfig = merge(baseWebpackConfig, {
   optimization: {
     sideEffects: false,
     splitChunks: {
-      chunks: 'all',
-      minSize: 30000,
-      minChunks: 1,
+      // chunks: 'all',
+      // minSize: 30000,
+      // minChunks: 1,
       cacheGroups: {
+        commons: {
+          name: 'commons',
+          chunks: 'initial',
+          minChunks: 2,
+          maxInitialRequests: 5,
+          minSize: 0
+        },
         vendor: {
+          test: /node_modules/,
+          chunks: 'initial',
           name: 'vendor',
-          test: /[\\/]node_modules[\\/]/,
-          chunks: 'all',
-          priority: -10,
+          priority: 10,
           enforce: true
         }
       }
