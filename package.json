@@ -8,7 +8,7 @@
     "prod": "npm run build",
     "dll": "npm run clean-dll && webpack --config config/webpack.dll.config.js --mode production",
     "dev": "cross-env NODE_ENV='development' webpack-dev-server --open --config config/webpack.config.dev.js --mode development",
-    "build": "cross-env NODE_ENV='production' webpack --config config/webpack.config.prod.js --display-used-exports --optimize-minimize --mode production",
+    "build": "cross-env NODE_ENV='production' webpack --config config/webpack.config.prod.js --optimize-minimize --mode production",
     "clean-dist": "rimraf dist",
     "clean-dll": "rimraf dll",
     "commit": "git-cz",
