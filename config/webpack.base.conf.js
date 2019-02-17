@@ -1,5 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+// const CopyWebpackPlugin = require('copy-webpack-plugin')
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const ESLintFormatter = require('eslint-friendly-formatter')
@@ -7,6 +7,7 @@ const { VueLoaderPlugin } = require('vue-loader')
 const WebpackBar = require('webpackbar')
 // const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin')
 const AutoDllPlugin = require('autodll-webpack-plugin')
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin') // 自动生成各尺寸的favicon图标
 const HappyPack = require('happypack')
 // const webpack = require('webpack')
 const path = require('path')
@@ -287,15 +288,17 @@ const webpackConfig = {
     }),
     new HtmlWebpackPlugin({
       // Required
-      inject: true,
+      inject: true, // 是否将js放在body的末尾
+      hash: false, // 防止缓存，在引入的文件后面加hash (PWA就是要缓存，这里设置为false)
       // template: require('html-webpack-template'),
       // template: 'node_modules/html-webpack-template/index.ejs',
-      template: path.join(basePath, 'index.html'),
+      template: path.join(basePath, 'public/index.html'),
+      filename: 'index.html', // 生成的html存放路径，相对于 output.path
 
       // Optional
       appMountId: 'app',
       title: 'React App',
-      favicon: path.join(srcDir, 'favicon.ico'),
+      favicon: path.join(basePath, 'public/favicon.png'),
       meta: [
         {
           name: 'description',
@@ -327,21 +330,37 @@ const webpackConfig = {
         vendor
       }
     }),
+    // 自动生成各种类型的favicon，这么做是为了以后各种设备上的扩展功能，比如PWA桌面图标
+    new FaviconsWebpackPlugin({
+      logo: path.join(basePath, 'public/favicon.png'),
+      prefix: 'icons/',
+      // Generate a cache file with control hashes and
+      // don't rebuild the favicons until those hashes change
+      persistentCache: false,
+      // Inject the html into the html-webpack-plugin
+      inject: true,
+      icons: {
+        appleIcon: true, // 目前只生成苹果的，其他平台都用苹果的图标
+        android: false,
+        firefox: false,
+        appleStartup: false
+      }
+    }),
     // new HtmlWebpackIncludeAssetsPlugin({
     //   assets: ['./dll/vendor.dll.js'],
     //   append: false
     // }),
     new VueLoaderPlugin(),
-    new CopyWebpackPlugin([
-      {
-        from: path.join(srcDir, 'favicon.ico'),
-        to: path.join(outDir, 'favicon.ico')
-      }
-      // {
-      //   from: path.join(basePath, 'dll'),
-      //   to: path.join(basePath, 'dist', 'dll')
-      // }
-    ]),
+    // new CopyWebpackPlugin([
+    // {
+    //   from: path.join(srcDir, 'favicon.ico'),
+    //   to: path.join(outDir, 'favicon.ico')
+    // }
+    // {
+    //   from: path.join(basePath, 'dll'),
+    //   to: path.join(basePath, 'dist', 'dll')
+    // }
+    // ]),
     new WebpackBar({
       minimal: false,
       compiledIn: false

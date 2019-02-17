@@ -26,6 +26,7 @@ module.exports = {
     'no-param-reassign': 0,
     'max-len': 0,
     'react/jsx-filename-extension': ['error', { extensions: ['.js', '.jsx'] }],
-    'linebreak-style': 0
+    'linebreak-style': 0,
+    'no-use-before-define': 0
   }
-};
+}
