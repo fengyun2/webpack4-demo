@@ -78,7 +78,8 @@ function cssLoaders(options) {
       return loaders
       // return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
     }
-    return ['style-loader'].concat(loaders)
+    // mini-css-extract-plugin 不支持css热更新。因此需在开发环境引入 css-hot-loader，以便支持css热更新
+    return ['css-hot-loader', 'style-loader'].concat(loaders)
   }
 
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
@@ -129,9 +130,10 @@ const webpackConfig = {
   },
   resolve: {
     extensions: ['.js', '.jsx', '.vue', '.less'],
-    modules: [srcDir, 'node_modules'],
+    modules: [srcDir, 'node_modules'], // 指定以下目录寻找第三方模块，避免webpack往父级目录递归搜索
+    // mainFields: ['main'], // 只采用main字段作为入口文件描述字段，减少搜索步骤
     alias: {
-      '@': srcDir,
+      '@': srcDir, // 缓存src目录为@符号，避免重复寻址
       vue: 'vue/dist/vue.esm.js',
       actions: resolve('src/actions'),
       components: resolve('src/components'),
@@ -141,6 +143,7 @@ const webpackConfig = {
     }
   },
   module: {
+    // noParse: /jquery|lodash/, // 忽略未采用模块化的文件，因此jquery或lodash将不会被下面的loaders解析
     rules: [
       ...(esLint ? [ESLintRule()] : []),
 
@@ -321,13 +324,14 @@ const webpackConfig = {
       }
       // scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
+    // AutoDllPlugin: 每次打包，这个插件都会检查注册在 entry 中的第三方库是否发生了变化，如果没有变化，插件就会使用缓存中的打包文件，减少了打包的时间，这时 Hash 也不会变化
     new AutoDllPlugin({
-      inject: true, // will inject the DLL bundles to index.html
+      inject: true, // will inject the DLL bundles to index.html(插件会自动把打包出来的第三方库文件插入到 HTML)
       debug: isProduction,
       filename: '[name]_[hash].dll.js',
-      // path: path.join(basePath, 'dll'),
+      path: './dll',
       entry: {
-        vendor
+        vendor // vendor 是你指定的名称，数组内容就是要打包的第三方库的名称，不要写全路径，Webpack 会自动去 node_modules 中找到的
       }
     }),
     // 自动生成各种类型的favicon，这么做是为了以后各种设备上的扩展功能，比如PWA桌面图标

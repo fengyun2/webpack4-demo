@@ -105,17 +105,22 @@ const webpackConfig = merge(baseWebpackConfig, {
       cacheGroups: {
         commons: {
           name: 'commons',
-          chunks: 'initial',
-          minChunks: 2,
-          maxInitialRequests: 5,
+          chunks: 'initial', // 共有三个值可选：initial(初始模块)、async(按需加载模块)和all(全部模块)
+          minChunks: 2, // 模块被引用>=2次，便分割
+          maxInitialRequests: 5, // 一个入口并发加载的chunk数量<=3
           minSize: 0
         },
         vendor: {
-          test: /node_modules/,
+          test: /node_modules/, // 表示默认拆分node_modules中的模块
           chunks: 'initial',
           name: 'vendor',
           priority: 10,
           enforce: true
+        },
+        antd: {
+          name: "chunk-antd", // 单独将 antd 拆包
+          priority: 15, // 权重需大于其它缓存组
+          test: /[\/]node_modules[\/]antd[\/]/
         }
       }
     },
