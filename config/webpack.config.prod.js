@@ -1,13 +1,17 @@
 const merge = require('webpack-merge')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const WebpackParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
+// const WebpackParallelUglifyPlugin = require('webpack-parallel-uglify-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 // const PrerenderSPAPlugin = require('prerender-spa-plugin')
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin') // 生成一个server-worker用于缓存
+const safePostCssParser = require('postcss-safe-parser');
+const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const webpack = require('webpack')
 const path = require('path')
 
+const smp = new SpeedMeasurePlugin();
 const baseWebpackConfig = require('./webpack.base.conf')
 const { basePath, vendor, outDir } = require('./project.config')
 
@@ -28,7 +32,7 @@ const cleanOptions = {
  * * */
 const PUBLIC_PATH = '/'
 
-const webpackConfig = merge(baseWebpackConfig, {
+const webpackConfig = smp.wrap(merge(baseWebpackConfig, {
   mode: 'production',
   entry: {
     vendor
@@ -49,23 +53,26 @@ const webpackConfig = merge(baseWebpackConfig, {
         PUBLIC_URL: PUBLIC_PATH.replace(/\/$/, '')
       })
     }),
-    new OptimizeCSSAssetsPlugin({
-      cssProcessorOptions: { safe: true }
-    }), // use OptimizeCSSAssetsPlugin
-    new WebpackParallelUglifyPlugin({
-      uglifyJS: {
-        output: {
-          beautify: false, // 不需要格式化
-          comments: false // 不保留注释
-        },
-        compress: {
-          warnings: false, // 在UglifyJs删除没有用到的代码时不输出警告
-          drop_console: true, // 删除所有的 `console` 语句，可以兼容ie浏览器
-          collapse_vars: true, // 内嵌定义了但是只用到一次的变量
-          reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
-        }
-      }
-    }),
+    // new OptimizeCSSAssetsPlugin({
+    //   cssProcessorOptions: {
+    //     parser: safePostCssParser,
+    //     safe: true
+    //   }
+    // }), // use OptimizeCSSAssetsPlugin
+    // new WebpackParallelUglifyPlugin({
+    //   uglifyJS: {
+    //     output: {
+    //       beautify: false, // 不需要格式化
+    //       comments: false // 不保留注释
+    //     },
+    //     compress: {
+    //       warnings: false, // 在UglifyJs删除没有用到的代码时不输出警告
+    //       drop_console: true, // 删除所有的 `console` 语句，可以兼容ie浏览器
+    //       collapse_vars: true, // 内嵌定义了但是只用到一次的变量
+    //       reduce_vars: true // 提取出出现多次但是没有定义成变量去引用的静态值
+    //     }
+    //   }
+    // }),
     // new PrerenderSPAPlugin({
     //   routes: ['/'],
     //   staticDir: path.join(basePath, 'dist')
@@ -96,8 +103,61 @@ const webpackConfig = merge(baseWebpackConfig, {
     new CleanWebpackPlugin(pathsToClean, cleanOptions)
   ],
   optimization: {
-    sideEffects: false,
+    // sideEffects: false,
+    minimize: true,
     concatenateModules: true,
+    minimizer: [
+      // This is only used in production mode
+      new TerserPlugin({
+        terserOptions: {
+          parse: {
+            // we want terser to parse ecma 8 code. However, we don't want it
+            // to apply any minfication steps that turns valid ecma 5 code
+            // into invalid ecma 5 code. This is why the 'compress' and 'output'
+            // sections only apply transformations that are ecma 5 safe
+            // https://github.com/facebook/create-react-app/pull/4234
+            ecma: 8,
+          },
+          compress: {
+            ecma: 5,
+            warnings: false,
+            // Disabled because of an issue with Uglify breaking seemingly valid code:
+            // https://github.com/facebook/create-react-app/issues/2376
+            // Pending further investigation:
+            // https://github.com/mishoo/UglifyJS2/issues/2011
+            comparisons: false,
+            // Disabled because of an issue with Terser breaking valid code:
+            // https://github.com/facebook/create-react-app/issues/5250
+            // Pending futher investigation:
+            // https://github.com/terser-js/terser/issues/120
+            inline: 2,
+          },
+          mangle: {
+            safari10: true,
+          },
+          output: {
+            ecma: 5,
+            comments: false,
+            // Turned on because emoji and regex is not minified properly using default
+            // https://github.com/facebook/create-react-app/issues/2488
+            ascii_only: true,
+          },
+        },
+        // Use multi-process parallel running to improve the build speed
+        // Default number of concurrent runs: os.cpus().length - 1
+        parallel: true,
+        // Enable file caching
+        cache: true,
+        sourceMap: false,
+      }),
+      // This is only used in production mode
+      new OptimizeCSSAssetsPlugin({
+        cssProcessorOptions: {
+          parser: safePostCssParser,
+          map: false,
+        },
+      }),
+    ],
     splitChunks: {
       chunks: 'async',
       minSize: 30000,
@@ -145,8 +205,9 @@ const webpackConfig = merge(baseWebpackConfig, {
       //   style: 3000
       // }
     },
+    // Keep the runtime chunk separated to enable long term caching
     runtimeChunk: true
   }
-})
+}))
 
 module.exports = webpackConfig
