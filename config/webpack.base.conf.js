@@ -1,41 +1,42 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin')
 // const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const ESLintFormatter = require('eslint-friendly-formatter')
-const { VueLoaderPlugin } = require('vue-loader')
-const WebpackBar = require('webpackbar')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const ESLintFormatter = require('eslint-friendly-formatter');
+const { VueLoaderPlugin } = require('vue-loader');
+const WebpackBar = require('webpackbar');
 // const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin')
-const AutoDllPlugin = require('autodll-webpack-plugin')
-const FaviconsWebpackPlugin = require('favicons-webpack-plugin') // 自动生成各尺寸的favicon图标
-const HappyPack = require('happypack')
-// const webpack = require('webpack')
-const path = require('path')
-const os = require('os')
+const AutoDllPlugin = require('autodll-webpack-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin'); // 自动生成各尺寸的favicon图标
+const HappyPack = require('happypack');
+const PnpWebpackPlugin = require('pnp-webpack-plugin');
+const webpack = require('webpack')
+const path = require('path');
+const os = require('os');
 
 const happyThreadPool = HappyPack.ThreadPool({
   size: os.cpus().length
-})
+});
 
 const {
   sourceMap, esLint, basePath, srcDir, outDir, vendor
-} = require('./project.config')
+} = require('./project.config');
 
-const isProduction = process.env.NODE_ENV == 'production'
+const isProduction = process.env.NODE_ENV == 'production';
 
 /**
  * 统一处理css-loader
  * @param {*} options
  */
 function cssLoaders(options) {
-  options = options || {}
+  options = options || {};
 
   const cssLoader = {
     loader: 'css-loader',
     options: {
       sourceMap: options.sourceMap
     }
-  }
+  };
   if (options.modules) {
     cssLoader.options = {
       ...cssLoader.options,
@@ -44,7 +45,7 @@ function cssLoaders(options) {
         importLoaders: 1,
         localIdentName: '[name]__[local]--[hash:base64:5]'
       }
-    }
+    };
   }
 
   const postcssLoader = {
@@ -57,29 +58,29 @@ function cssLoaders(options) {
         require('postcss-preset-env')()
       ]
     }
-  }
+  };
 
   // generate loader string to be used with extract text plugin
   function generateLoaders(loader, loaderOptions) {
-    const loaders = options.usePostCSS ? [cssLoader, postcssLoader] : [cssLoader]
+    const loaders = options.usePostCSS ? [cssLoader, postcssLoader] : [cssLoader];
 
     if (loader) {
       loaders.push({
         loader: `${loader}-loader`,
         options: Object.assign({}, loaderOptions, { sourceMap: options.sourceMap })
-      })
+      });
     }
 
     // Extract CSS when that option is specified (which is the case during
     // production build)
     if (options.extract) {
-      loaders.unshift(MiniCssExtractPlugin.loader)
+      loaders.unshift(MiniCssExtractPlugin.loader);
 
-      return loaders
+      return loaders;
       // return ExtractTextPlugin.extract({use: loaders, fallback: 'style-loader'});
     }
     // mini-css-extract-plugin 不支持css热更新。因此需在开发环境引入 css-hot-loader，以便支持css热更新
-    return ['css-hot-loader', 'style-loader'].concat(loaders)
+    return ['css-hot-loader', 'style-loader'].concat(loaders);
   }
 
   // https://vue-loader.vuejs.org/en/configurations/extract-css.html
@@ -91,7 +92,7 @@ function cssLoaders(options) {
     scss: generateLoaders('sass'),
     stylus: generateLoaders('stylus'),
     styl: generateLoaders('stylus')
-  }
+  };
 }
 
 const ESLintRule = () => ({
@@ -105,11 +106,11 @@ const ESLintRule = () => ({
   enforce: 'pre',
   include: srcDir,
   exclude: /node_modules/
-})
+});
 
 /* eslint-disable */
 function resolve(dir) {
-  return path.resolve(__dirname, '..', dir)
+  return path.resolve(__dirname, '..', dir);
 }
 /* eslint-enable */
 
@@ -140,7 +141,11 @@ const webpackConfig = {
       containers: resolve('src/containers'),
       reducers: resolve('src/reducers'),
       utils: resolve('src/utils')
-    }
+    },
+    plugins: [PnpWebpackPlugin]
+  },
+  resolveLoader: {
+    plugins: [PnpWebpackPlugin.moduleLoader(module)]
   },
   module: {
     // noParse: /jquery|lodash/, // 忽略未采用模块化的文件，因此jquery或lodash将不会被下面的loaders解析
@@ -235,7 +240,7 @@ const webpackConfig = {
             loader: 'url-loader',
             options: {
               limit: 8192,
-              name: isProduction ? 'images/[name].[hash:7].[ext]' : 'images/[name].[ext]'
+              name: isProduction ? 'images/[name].[hash:8].[ext]' : 'images/[name].[ext]'
             }
           }
         ]
@@ -287,7 +292,7 @@ const webpackConfig = {
     }),
     new MiniCssExtractPlugin({
       filename: 'css/[name].[chunkhash:8].css',
-      chunkFilename: 'css/[name].[contenthash:8].css'
+      chunkFilename: 'css/[name].[contenthash:8].chunk.css'
     }),
     new HtmlWebpackPlugin({
       // Required
@@ -321,6 +326,12 @@ const webpackConfig = {
         conservativeCollapse: true,
         preserveLineBreaks: true,
         removeAttributeQuotes: true,
+        removeEmptyAttributes: true,
+        removeStyleLinkTypeAttributes: true,
+        keepClosingSlash: true,
+        minifyJS: true,
+        minifyCSS: true,
+        minifyURLs: true,
         useShortDoctype: true,
         html5: true
       },
@@ -338,21 +349,22 @@ const webpackConfig = {
       }
     }),
     // 自动生成各种类型的favicon，这么做是为了以后各种设备上的扩展功能，比如PWA桌面图标
-    new FaviconsWebpackPlugin({
-      logo: path.join(basePath, 'public/favicon.png'),
-      prefix: 'icons/',
-      // Generate a cache file with control hashes and
-      // don't rebuild the favicons until those hashes change
-      persistentCache: false,
-      // Inject the html into the html-webpack-plugin
-      inject: true,
-      icons: {
-        appleIcon: true, // 目前只生成苹果的，其他平台都用苹果的图标
-        android: false,
-        firefox: false,
-        appleStartup: false
-      }
-    }),
+    // new FaviconsWebpackPlugin({
+    //   logo: path.join(basePath, 'public/favicon.png'),
+    //   prefix: 'icons/',
+    //   // Generate a cache file with control hashes and
+    //   // don't rebuild the favicons until those hashes change
+    //   persistentCache: false,
+    //   // Inject the html into the html-webpack-plugin
+    //   inject: true,
+    //   icons: {
+    //     appleIcon: true, // 目前只生成苹果的，其他平台都用苹果的图标
+    //     android: false,
+    //     firefox: false,
+    //     appleStartup: false
+    //   }
+    // }),
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     // new HtmlWebpackIncludeAssetsPlugin({
     //   assets: ['./dll/vendor.dll.js'],
     //   append: false
@@ -372,7 +384,17 @@ const webpackConfig = {
       minimal: false,
       compiledIn: false
     })
-  ]
-}
+  ],
+  node: {
+    module: 'empty',
+    dgram: 'empty',
+    dns: 'mock',
+    fs: 'empty',
+    net: 'empty',
+    tls: 'empty',
+    child_process: 'empty',
+  },
+  performance: false
+};
 
-module.exports = webpackConfig
+module.exports = webpackConfig;

@@ -17,7 +17,11 @@
     "eslint": "eslint --fix src/**/*.js",
     "post-update": "yarn upgrade --latest"
   },
-  "keywords": ["webpack", "webpack4", "webpack5"],
+  "keywords": [
+    "webpack",
+    "webpack4",
+    "webpack5"
+  ],
   "author": "fengyun2",
   "license": "ISC",
   "devDependencies": {
@@ -70,15 +74,19 @@
     "mini-css-extract-plugin": "^0.5.0",
     "node-sass": "^4.7.2",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "pnp-webpack-plugin": "^1.4.1",
     "postcss": "^7.0.14",
     "postcss-loader": "^3.0.0",
     "postcss-preset-env": "^6.5.0",
+    "postcss-safe-parser": "^4.0.1",
     "prettier": "^1.11.1",
     "rimraf": "^2.6.3",
     "sass-loader": "^7.1.0",
+    "speed-measure-webpack-plugin": "^1.3.0",
     "standard-version": "^4.3.0",
     "style-loader": "^0.23.1",
     "sw-precache-webpack-plugin": "^0.11.5",
+    "terser-webpack-plugin": "^1.2.3",
     "url-loader": "^1.0.1",
     "vue-loader": "^15.6.2",
     "vue-template-compiler": "^2.6.6",
@@ -96,7 +104,11 @@
     "react-loadable": "^5.5.0",
     "vue": "^2.6.6"
   },
-  "browserslist": ["> 1%", "last 2 versions", "not ie <= 8"],
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
   "config": {
     "commitizen": {
       "path": "node_modules/cz-customizable"
