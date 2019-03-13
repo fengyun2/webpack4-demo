@@ -1,5 +1,6 @@
 module.exports = {
-  extends: ['airbnb'],
+  // extends: ['airbnb'],
+  extends: ['react-app'],
   env: {
     browser: true,
     node: true,
@@ -16,7 +17,7 @@ module.exports = {
     },
     sourceType: 'module'
   },
-  plugins: ['prettier'],
+  // plugins: ['prettier'],
   rules: {
     'import/no-extraneous-dependencies': 0,
     semi: 0,

@@ -15,6 +15,6 @@ module.exports = {
     react: 'React',
     'react-dom': 'ReactDOM'
   },
-  vendor: ['react', 'react-dom']
+  vendor: ['react', 'react-dom', 'react-router-dom']
   // 当 (dll不存在) (vendor被改变) (包的版本被更换) 时，请 npm run dll。
 }
