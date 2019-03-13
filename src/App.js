@@ -1,6 +1,7 @@
 import React from 'react'
 // import { Button } from 'antd'
 import Home from './container/Home'
+import About from './container/About'
 import styles from './App.css'
 
 const App = () => (
@@ -10,6 +11,7 @@ const App = () => (
     </button>
     {/* <Button type="primary">Antd Button</Button> */}
     <Home />
+    <About />
   </div>
 )
 

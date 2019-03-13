@@ -316,12 +316,15 @@ const webpackConfig = {
       lang: 'en-US',
       inlineManifestWebpackName: 'webpackManifest',
       minify: {
+        removeComments: true,
         collapseWhitespace: true,
         conservativeCollapse: true,
         preserveLineBreaks: true,
+        removeAttributeQuotes: true,
         useShortDoctype: true,
         html5: true
-      }
+      },
+      chunksSortMode: 'dependency'
       // scripts: ['./dll/vendor.dll.js'] // 与dll配置文件中output.fileName对齐
     }),
     // AutoDllPlugin: 每次打包，这个插件都会检查注册在 entry 中的第三方库是否发生了变化，如果没有变化，插件就会使用缓存中的打包文件，减少了打包的时间，这时 Hash 也不会变化
