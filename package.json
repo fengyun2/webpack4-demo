@@ -15,7 +15,9 @@
     "prettier": "prettier --write \"{src,mock}/**/*.{js,css,scss,less}\"",
     "release": "standard-version",
     "eslint": "eslint --fix src/**/*.js",
-    "post-update": "yarn upgrade --latest"
+    "post-update": "yarn upgrade --latest",
+    "prepare": "yarn run snyk-protect",
+    "snyk-protect": "snyk-protect"
   },
   "keywords": [
     "webpack",
@@ -100,12 +102,13 @@
     "webpackbar": "^3.1.5"
   },
   "dependencies": {
-    "antd": "^3.15.0",
+    "antd": "^3.16.4",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "react-loadable": "^5.5.0",
     "react-router-dom": "^4.3.1",
-    "vue": "^2.6.6"
+    "vue": "^2.6.6",
+    "@snyk/protect": "latest"
   },
   "browserslist": [
     "> 1%",
@@ -122,5 +125,6 @@
     "hooks": {
       "commit-msg": "commitlint -e $GIT_PARAMS"
     }
-  }
+  },
+  "snyk": true
 }
